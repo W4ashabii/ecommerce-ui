@@ -10,17 +10,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Primary brand colors
+        // Primary brand colors - theme-aware with opacity support
         brand: {
           black: '#0d0d0d',
-          pink: '#ff4fa3',
-          'pink-light': '#ff7dc0',
-          'pink-dark': '#e6458f',
+          pink: 'rgb(var(--brand-pink-rgb) / <alpha-value>)',
+          'pink-light': 'var(--brand-pink-light)',
+          'pink-dark': 'var(--brand-pink-dark)',
+          text: 'var(--brand-text)',
           'baby-pink': '#ffc0cb',
           beige: '#f5f0e8',
           'beige-dark': '#e8e0d5',
           cream: '#fdfbf7',
           white: '#ffffff',
+          // Static colors for when needed
+          'hot-pink': '#ff4fa3',
+          'magenta-pink': '#D5006D',
         },
         // Semantic colors
         background: 'hsl(var(--background))',
@@ -96,8 +100,8 @@ const config: Config = {
           '50%': { transform: 'translateY(-10px)' },
         },
         glow: {
-          '0%, 100%': { boxShadow: '0 0 20px rgba(255, 79, 163, 0.3)' },
-          '50%': { boxShadow: '0 0 40px rgba(255, 79, 163, 0.6)' },
+          '0%, 100%': { boxShadow: '0 0 20px rgb(var(--brand-pink-rgb) / 0.3)' },
+          '50%': { boxShadow: '0 0 40px rgb(var(--brand-pink-rgb) / 0.6)' },
         },
       },
       animation: {
@@ -111,7 +115,7 @@ const config: Config = {
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-pink': 'linear-gradient(135deg, #ff4fa3 0%, #ff7dc0 100%)',
+        'gradient-pink': 'linear-gradient(135deg, var(--brand-pink) 0%, var(--brand-pink-light) 100%)',
         'glass': 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
       },
       backdropBlur: {

@@ -26,12 +26,12 @@ const navLinks = [
 
 export function Navbar() {
   const { user, isAdmin, signIn, signOut } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { mode, toggleMode } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { toggleCart, getItemCount } = useCartStore();
   const itemCount = getItemCount();
 
-  const isDark = theme === 'dark';
+  const isDark = mode === 'dark';
 
   return (
     <header className={cn(
@@ -57,12 +57,15 @@ export function Navbar() {
               className={cn(
                 "text-sm font-medium transition-colors relative group",
                 isDark 
-                  ? "text-brand-pink/80 hover:text-brand-pink" 
+                  ? "text-white/80 hover:text-white" 
                   : "text-gray-600 hover:text-brand-pink"
               )}
             >
               {link.label}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-pink transition-all group-hover:w-full" />
+              <span className={cn(
+                "absolute -bottom-1 left-0 w-0 h-0.5 transition-all group-hover:w-full",
+                isDark ? "bg-white" : "bg-brand-pink"
+              )} />
             </Link>
           ))}
         </div>
@@ -71,11 +74,11 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           {/* Theme Toggle */}
           <button
-            onClick={toggleTheme}
+            onClick={toggleMode}
             className={cn(
               "p-2 rounded-lg transition-colors",
               isDark 
-                ? "hover:bg-white/10 text-brand-pink" 
+                ? "hover:bg-brand-pink/10 text-brand-pink" 
                 : "hover:bg-brand-pink/10 text-brand-pink"
             )}
             title={isDark ? "Switch to light mode" : "Switch to dark mode"}
@@ -93,7 +96,7 @@ export function Navbar() {
             className={cn(
               "relative p-2 rounded-lg transition-colors",
               isDark 
-                ? "hover:bg-white/10 text-brand-pink" 
+                ? "hover:bg-brand-pink/10 text-brand-pink" 
                 : "hover:bg-brand-pink/10 text-brand-pink"
             )}
           >
@@ -114,26 +117,54 @@ export function Navbar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className={cn(
-                  "p-2 rounded-lg transition-colors",
+                  "flex items-center gap-2 p-1.5 pr-3 rounded-full transition-all",
                   isDark 
-                    ? "hover:bg-white/10 text-brand-pink" 
-                    : "hover:bg-brand-pink/10 text-brand-pink"
+                    ? "hover:bg-white/10" 
+                    : "hover:bg-brand-pink/10 border border-brand-pink/20"
                 )}>
                   {user.picture ? (
                     <img
                       src={user.picture}
                       alt={user.name || 'User'}
-                      className="h-6 w-6 rounded-full ring-2 ring-brand-pink/50"
+                      className="h-8 w-8 rounded-full ring-2 ring-brand-pink/50 object-cover"
+                      referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <User className="h-5 w-5" />
+                    <div className={cn(
+                      "h-8 w-8 rounded-full flex items-center justify-center text-sm font-semibold",
+                      isDark 
+                        ? "bg-brand-pink/20 text-brand-pink" 
+                        : "bg-brand-pink text-white"
+                    )}>
+                      {user.name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
                   )}
+                  <span className={cn(
+                    "text-sm font-medium hidden sm:block max-w-[100px] truncate",
+                    isDark ? "text-brand-pink" : "text-gray-700"
+                  )}>
+                    {user.name?.split(' ')[0] || 'User'}
+                  </span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="flex items-center gap-3 px-3 py-3">
+                  {user.picture ? (
+                    <img
+                      src={user.picture}
+                      alt={user.name || 'User'}
+                      className="h-10 w-10 rounded-full ring-2 ring-brand-pink/30 object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-brand-pink/20 flex items-center justify-center text-brand-pink font-semibold">
+                      {user.name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{user.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </div>
                 </div>
                 <DropdownMenuSeparator />
                 {isAdmin && (
@@ -172,7 +203,7 @@ export function Navbar() {
             className={cn(
               "p-2 rounded-lg transition-colors md:hidden",
               isDark 
-                ? "hover:bg-white/10 text-brand-pink" 
+                ? "hover:bg-white/10 text-white" 
                 : "hover:bg-brand-pink/10 text-brand-pink"
             )}
           >
@@ -208,7 +239,7 @@ export function Navbar() {
                   className={cn(
                     "block py-2 text-sm font-medium transition-colors",
                     isDark 
-                      ? "text-brand-pink/80 hover:text-brand-pink" 
+                      ? "text-white/80 hover:text-white" 
                       : "text-gray-600 hover:text-brand-pink"
                   )}
                 >

@@ -20,8 +20,8 @@ const defaultValues = [
 ];
 
 export default function AboutPage() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { mode } = useTheme();
+  const isDark = mode === 'dark';
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['settings'],

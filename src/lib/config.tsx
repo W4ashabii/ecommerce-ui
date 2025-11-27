@@ -48,3 +48,4 @@ export function isAdminEmail(email: string, allowedEmails: string[]): boolean {
   return allowedEmails.includes(email.toLowerCase());
 }
 
+

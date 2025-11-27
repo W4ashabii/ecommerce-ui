@@ -12,8 +12,8 @@ import { useTheme } from '@/lib/theme-context';
 import { cn } from '@/lib/utils';
 
 export default function CollectionsPage() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { mode } = useTheme();
+  const isDark = mode === 'dark';
 
   const { data: settings } = useQuery({
     queryKey: ['settings'],

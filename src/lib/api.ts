@@ -54,6 +54,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     ...(options.headers || {}),
   };
 
+  // Legacy support for token-based auth (will be removed)
   if (token) {
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
@@ -61,6 +62,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...fetchOptions,
     headers,
+    credentials: 'include', // Include HTTP-only cookies in requests
   });
 
   const data = response.headers.get('content-type')?.includes('application/json')
@@ -84,27 +86,40 @@ export const authApi = {
   getGoogleAuthUrl: () =>
     request<{ url: string }>('/auth/google/url'),
 
-  // Exchange authorization code for tokens (secure flow)
+  // Exchange authorization code for tokens (sets HTTP-only cookie)
   exchangeCode: (code: string) =>
-    request<{ token: string; user: User }>('/auth/google/callback', {
+    request<{ user: User }>('/auth/google/callback', {
       method: 'POST',
       body: JSON.stringify({ code }),
     }),
 
-  // Login with ID token (alternative flow)
+  // Login with ID token (alternative flow, sets HTTP-only cookie)
   loginWithGoogle: (idToken: string) =>
-    request<{ token: string; user: User }>('/auth/google', {
+    request<{ user: User }>('/auth/google', {
       method: 'POST',
       body: JSON.stringify({ idToken }),
     }),
 
-  validateAdmin: (token: string) =>
-    request<{ isAdmin: boolean; user?: User }>('/auth/validate-admin', {
-      token,
+  // Validate admin access (uses HTTP-only cookie)
+  validateAdmin: () =>
+    request<{ isAdmin: boolean; user?: User }>('/auth/validate-admin'),
+
+  // Get current user (uses HTTP-only cookie)
+  getMe: () =>
+    request<User>('/auth/me'),
+
+  // Logout (clears HTTP-only cookie)
+  logout: () =>
+    request<{ success: boolean }>('/auth/logout', {
+      method: 'POST',
     }),
 
-  getMe: (token: string) =>
-    request<User>('/auth/me', { token }),
+  // Update theme preference
+  updateTheme: (theme: 'light' | 'dark') =>
+    request<{ theme: 'light' | 'dark' }>('/auth/theme', {
+      method: 'PUT',
+      body: JSON.stringify({ theme }),
+    }),
 };
 
 // Products API
@@ -137,44 +152,38 @@ export const productsApi = {
       `/products/category/${categoryId}?page=${page}&limit=${limit}`
     ),
 
-  create: (product: ProductInput, token: string) =>
+  create: (product: ProductInput, _token?: string) =>
     request<Product>('/products', {
       method: 'POST',
       body: JSON.stringify(product),
-      token,
     }),
 
-  update: (id: string, product: Partial<ProductInput>, token: string) =>
+  update: (id: string, product: Partial<ProductInput>, _token?: string) =>
     request<Product>(`/products/${id}`, {
       method: 'PUT',
       body: JSON.stringify(product),
-      token,
     }),
 
-  delete: (id: string, token: string) =>
+  delete: (id: string, _token?: string) =>
     request<void>(`/products/${id}`, {
       method: 'DELETE',
-      token,
     }),
 
-  addColorVariant: (productId: string, variant: ColorVariant, token: string) =>
+  addColorVariant: (productId: string, variant: ColorVariant, _token?: string) =>
     request<Product>(`/products/${productId}/variants`, {
       method: 'POST',
       body: JSON.stringify(variant),
-      token,
     }),
 
-  updateColorVariant: (productId: string, variantId: string, variant: Partial<ColorVariant>, token: string) =>
+  updateColorVariant: (productId: string, variantId: string, variant: Partial<ColorVariant>, _token?: string) =>
     request<Product>(`/products/${productId}/variants/${variantId}`, {
       method: 'PUT',
       body: JSON.stringify(variant),
-      token,
     }),
 
-  removeColorVariant: (productId: string, variantId: string, token: string) =>
+  removeColorVariant: (productId: string, variantId: string, _token?: string) =>
     request<Product>(`/products/${productId}/variants/${variantId}`, {
       method: 'DELETE',
-      token,
     }),
 };
 
@@ -192,169 +201,165 @@ export const categoriesApi = {
   getSubcategories: (parentId: string) =>
     request<Category[]>(`/categories/${parentId}/subcategories`),
 
-  create: (category: CategoryInput, token: string) =>
+  create: (category: CategoryInput, _token?: string) =>
     request<Category>('/categories', {
       method: 'POST',
       body: JSON.stringify(category),
-      token,
     }),
 
-  update: (id: string, category: Partial<CategoryInput>, token: string) =>
+  update: (id: string, category: Partial<CategoryInput>, _token?: string) =>
     request<Category>(`/categories/${id}`, {
       method: 'PUT',
       body: JSON.stringify(category),
-      token,
     }),
 
-  delete: (id: string, token: string) =>
+  delete: (id: string, _token?: string) =>
     request<void>(`/categories/${id}`, {
       method: 'DELETE',
-      token,
     }),
 
-  reorder: (orderedIds: string[], token: string) =>
+  reorder: (orderedIds: string[], _token?: string) =>
     request<void>('/categories/reorder', {
       method: 'POST',
       body: JSON.stringify({ orderedIds }),
-      token,
     }),
 };
 
-// Settings API
+// Settings API (token parameter kept for backward compatibility but not used - auth via HTTP-only cookie)
 export const settingsApi = {
   get: () => request<Settings>('/settings'),
 
-  update: (settings: Partial<Settings>, token: string) =>
+  update: (settings: Partial<Settings>, _token?: string) =>
     request<Settings>('/settings', {
       method: 'PUT',
       body: JSON.stringify(settings),
-      token,
     }),
 
-  addHeroSlide: (slide: HeroSlide, token: string) =>
+  addHeroSlide: (slide: HeroSlide, _token?: string) =>
     request<Settings>('/settings/hero-slides', {
       method: 'POST',
       body: JSON.stringify(slide),
-      token,
     }),
 
-  updateHeroSlide: (id: string, slide: Partial<HeroSlide>, token: string) =>
+  updateHeroSlide: (id: string, slide: Partial<HeroSlide>, _token?: string) =>
     request<Settings>(`/settings/hero-slides/${id}`, {
       method: 'PUT',
       body: JSON.stringify(slide),
-      token,
     }),
 
-  removeHeroSlide: (id: string, token: string) =>
+  removeHeroSlide: (id: string, _token?: string) =>
     request<Settings>(`/settings/hero-slides/${id}`, {
       method: 'DELETE',
-      token,
     }),
 
-  addBanner: (banner: Banner, token: string) =>
+  addBanner: (banner: Banner, _token?: string) =>
     request<Settings>('/settings/banners', {
       method: 'POST',
       body: JSON.stringify(banner),
-      token,
     }),
 
-  updateBanner: (id: string, banner: Partial<Banner>, token: string) =>
+  updateBanner: (id: string, banner: Partial<Banner>, _token?: string) =>
     request<Settings>(`/settings/banners/${id}`, {
       method: 'PUT',
       body: JSON.stringify(banner),
-      token,
     }),
 
-  removeBanner: (id: string, token: string) =>
+  removeBanner: (id: string, _token?: string) =>
     request<Settings>(`/settings/banners/${id}`, {
       method: 'DELETE',
-      token,
     }),
 
-  setFeaturedProducts: (productIds: string[], token: string) =>
+  setFeaturedProducts: (productIds: string[], _token?: string) =>
     request<Settings>('/settings/featured-products', {
       method: 'PUT',
       body: JSON.stringify({ productIds }),
-      token,
     }),
 
-  updateAnnouncement: (announcement: { text: string; link?: string; isActive: boolean }, token: string) =>
+  updateAnnouncement: (announcement: { text: string; link?: string; isActive: boolean }, _token?: string) =>
     request<Settings>('/settings/announcement', {
       method: 'PUT',
       body: JSON.stringify(announcement),
-      token,
     }),
 
-  updateSocialLinks: (links: Record<string, string>, token: string) =>
+  updateSocialLinks: (links: Record<string, string>, _token?: string) =>
     request<Settings>('/settings/social-links', {
       method: 'PUT',
       body: JSON.stringify(links),
-      token,
     }),
 
-  updateContactInfo: (info: Record<string, string>, token: string) =>
+  updateContactInfo: (info: Record<string, string>, _token?: string) =>
     request<Settings>('/settings/contact-info', {
       method: 'PUT',
       body: JSON.stringify(info),
-      token,
+    }),
+
+  updateFloatingElements: (elements: FloatingElement[], _token?: string) =>
+    request<Settings>('/settings/floating-elements', {
+      method: 'PUT',
+      body: JSON.stringify({ elements }),
+    }),
+
+  updateFloatingElement: (id: string, element: Partial<FloatingElement>, _token?: string) =>
+    request<Settings>(`/settings/floating-elements/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(element),
+    }),
+
+  updateWebsiteTheme: (theme: 'floral' | 'summer' | 'winter' | 'monsoon' | 'classy' | 'monochrome', _token?: string) =>
+    request<Settings>('/settings/website-theme', {
+      method: 'PUT',
+      body: JSON.stringify({ theme }),
     }),
 };
 
-// Upload API
+// Upload API (token parameter kept for backward compatibility but not used - auth via HTTP-only cookie)
 export const uploadApi = {
-  uploadProductImage: (image: string, token: string) =>
+  uploadProductImage: (image: string, _token?: string) =>
     request<UploadResult>('/upload/product-image', {
       method: 'POST',
       body: JSON.stringify({ image }),
-      token,
     }),
 
-  uploadProductImages: (images: string[], token: string) =>
+  uploadProductImages: (images: string[], _token?: string) =>
     request<UploadResult[]>('/upload/product-images', {
       method: 'POST',
       body: JSON.stringify({ images }),
-      token,
     }),
 
-  uploadModel: (model: string, token: string) =>
+  uploadModel: (model: string, _token?: string) =>
     request<UploadResult>('/upload/model', {
       method: 'POST',
       body: JSON.stringify({ model }),
-      token,
     }),
 
-  uploadHeroImage: (image: string, token: string) =>
+  uploadHeroImage: (image: string, _token?: string) =>
     request<UploadResult>('/upload/hero-image', {
       method: 'POST',
       body: JSON.stringify({ image }),
-      token,
     }),
 
-  uploadBannerImage: (image: string, token: string) =>
+  uploadBannerImage: (image: string, _token?: string) =>
     request<UploadResult>('/upload/banner-image', {
       method: 'POST',
       body: JSON.stringify({ image }),
-      token,
     }),
 
-  uploadCategoryImage: (image: string, token: string) =>
+  uploadCategoryImage: (image: string, _token?: string) =>
     request<UploadResult>('/upload/category-image', {
       method: 'POST',
       body: JSON.stringify({ image }),
-      token,
     }),
 
-  deleteFile: (publicId: string, resourceType: string, token: string) =>
+  deleteFile: (publicId: string, resourceType: string, _token?: string) =>
     request<void>('/upload', {
       method: 'DELETE',
       body: JSON.stringify({ publicId, resourceType }),
-      token,
     }),
 };
 
-// Orders API
+// Orders API (token parameter kept for backward compatibility but not used - auth via HTTP-only cookie)
 export const ordersApi = {
-  getAll: (params?: OrderFilters, token?: string) => {
+  getAll: (params?: OrderFilters, _token?: string) => {
     const searchParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -364,16 +369,15 @@ export const ordersApi = {
       });
     }
     const query = searchParams.toString();
-    return request<OrdersResponse>(`/orders${query ? `?${query}` : ''}`, { token });
+    return request<OrdersResponse>(`/orders${query ? `?${query}` : ''}`);
   },
 
-  getById: (id: string, token: string) =>
-    request<Order>(`/orders/${id}`, { token }),
+  getById: (id: string, _token?: string) =>
+    request<Order>(`/orders/${id}`),
 
-  getMyOrders: (page = 1, limit = 10, token: string) =>
+  getMyOrders: (page = 1, limit = 10, _token?: string) =>
     request<{ orders: Order[]; total: number; pages: number }>(
-      `/orders/my-orders?page=${page}&limit=${limit}`,
-      { token }
+      `/orders/my-orders?page=${page}&limit=${limit}`
     ),
 
   create: (order: CreateOrderInput) =>
@@ -387,29 +391,26 @@ export const ordersApi = {
       `/orders/track/${orderNumber}`
     ),
 
-  updateStatus: (id: string, status: string, token: string) =>
+  updateStatus: (id: string, status: string, _token?: string) =>
     request<Order>(`/orders/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
-      token,
     }),
 
-  updatePaymentStatus: (id: string, paymentStatus: string, paymentId?: string, token?: string) =>
+  updatePaymentStatus: (id: string, paymentStatus: string, paymentId?: string, _token?: string) =>
     request<Order>(`/orders/${id}/payment-status`, {
       method: 'PATCH',
       body: JSON.stringify({ paymentStatus, paymentId }),
-      token,
     }),
 
-  addTracking: (id: string, trackingNumber: string, token: string) =>
+  addTracking: (id: string, trackingNumber: string, _token?: string) =>
     request<Order>(`/orders/${id}/tracking`, {
       method: 'PATCH',
       body: JSON.stringify({ trackingNumber }),
-      token,
     }),
 
-  getStats: (token: string) =>
-    request<OrderStats>('/orders/stats', { token }),
+  getStats: (_token?: string) =>
+    request<OrderStats>('/orders/stats'),
 };
 
 // Types
@@ -419,6 +420,7 @@ export interface User {
   name: string;
   picture?: string;
   role: 'admin' | 'customer' | 'none';
+  theme: 'light' | 'dark';
 }
 
 export interface ColorVariant {
@@ -547,6 +549,16 @@ export interface TeamMember {
   imagePublicId?: string;
 }
 
+export interface FloatingElement {
+  _id?: string;
+  type: 'icon' | 'image';
+  icon?: 'heart' | 'star' | 'sparkles';
+  image?: string;
+  imagePublicId?: string;
+  position: 'top-right' | 'bottom-right' | 'middle-left';
+  isActive: boolean;
+}
+
 export interface AboutPage {
   title: string;
   subtitle?: string;
@@ -608,6 +620,8 @@ export interface Settings {
   };
   aboutPage?: AboutPage;
   collectionsPage?: CollectionsPage;
+  floatingElements?: FloatingElement[];
+  websiteTheme?: 'floral' | 'summer' | 'winter' | 'monsoon' | 'classy' | 'monochrome';
 }
 
 export interface UploadResult {

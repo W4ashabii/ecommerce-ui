@@ -9,20 +9,21 @@ import {
   Image as ImageIcon,
   Trash2,
   Edit,
-  LayoutTemplate,
   Megaphone,
   Upload,
   X,
-  GripVertical,
+  Heart,
+  Star,
+  Sparkles,
 } from 'lucide-react';
-import { settingsApi, uploadApi, HeroSlide, Banner } from '@/lib/api';
+import { settingsApi, uploadApi, HeroSlide, FloatingElement } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
@@ -46,9 +47,7 @@ export default function AdminContentPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('hero');
   const [heroDialogOpen, setHeroDialogOpen] = useState(false);
-  const [bannerDialogOpen, setBannerDialogOpen] = useState(false);
   const [editHeroSlide, setEditHeroSlide] = useState<HeroSlide | null>(null);
-  const [editBanner, setEditBanner] = useState<Banner | null>(null);
   const [heroForm, setHeroForm] = useState<Partial<HeroSlide>>({
     title: '',
     subtitle: '',
@@ -56,14 +55,6 @@ export default function AdminContentPage() {
     buttonLink: '',
     isActive: true,
     order: 0,
-  });
-  const [bannerForm, setBannerForm] = useState<Partial<Banner>>({
-    title: '',
-    subtitle: '',
-    buttonText: '',
-    buttonLink: '',
-    position: 'middle',
-    isActive: true,
   });
   const [imageFile, setImageFile] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -133,66 +124,6 @@ export default function AdminContentPage() {
     onError: () => toast.error('Failed to remove hero slide'),
   });
 
-  const addBannerMutation = useMutation({
-    mutationFn: async (banner: Banner) => {
-      if (imageFile) {
-        setUploading(true);
-        try {
-          const result = await uploadApi.uploadBannerImage(
-            imageFile,
-            token || ''
-          );
-          banner.image = result.url;
-          banner.imagePublicId = result.publicId;
-        } finally {
-          setUploading(false);
-        }
-      }
-      return settingsApi.addBanner(banner, token || '');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings'] });
-      toast.success('Banner added');
-      resetBannerForm();
-    },
-    onError: () => toast.error('Failed to add banner'),
-  });
-
-  const updateBannerMutation = useMutation({
-    mutationFn: async ({ id, banner }: { id: string; banner: Partial<Banner> }) => {
-      if (imageFile) {
-        setUploading(true);
-        try {
-          const result = await uploadApi.uploadBannerImage(
-            imageFile,
-            token || ''
-          );
-          banner.image = result.url;
-          banner.imagePublicId = result.publicId;
-        } finally {
-          setUploading(false);
-        }
-      }
-      return settingsApi.updateBanner(id, banner, token || '');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings'] });
-      toast.success('Banner updated');
-      resetBannerForm();
-    },
-    onError: () => toast.error('Failed to update banner'),
-  });
-
-  const removeBannerMutation = useMutation({
-    mutationFn: (id: string) =>
-      settingsApi.removeBanner(id, token || ''),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings'] });
-      toast.success('Banner removed');
-    },
-    onError: () => toast.error('Failed to remove banner'),
-  });
-
   const updateAnnouncementMutation = useMutation({
     mutationFn: (announcement: { text: string; link?: string; isActive: boolean }) =>
       settingsApi.updateAnnouncement(announcement, token || ''),
@@ -201,6 +132,43 @@ export default function AdminContentPage() {
       toast.success('Announcement updated');
     },
     onError: () => toast.error('Failed to update announcement'),
+  });
+
+  const updateFloatingElementMutation = useMutation({
+    mutationFn: async ({ id, element, newImage }: { id: string; element: Partial<FloatingElement>; newImage?: string }) => {
+      if (newImage) {
+        setUploading(true);
+        try {
+          const result = await uploadApi.uploadProductImage(newImage, token || '');
+          element.image = result.url;
+          element.imagePublicId = result.publicId;
+        } finally {
+          setUploading(false);
+        }
+      }
+      return settingsApi.updateFloatingElement(id, element, token || '');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+      toast.success('Floating element updated');
+      setFloatingImageFile(null);
+      setEditingFloatingElement(null);
+    },
+    onError: () => toast.error('Failed to update floating element'),
+  });
+
+  const [floatingImageFile, setFloatingImageFile] = useState<string | null>(null);
+  const [editingFloatingElement, setEditingFloatingElement] = useState<string | null>(null);
+
+  const floatingDropzone = useDropzone({
+    onDrop: async (files) => {
+      if (files[0]) {
+        const base64 = await fileToBase64(files[0]);
+        setFloatingImageFile(base64);
+      }
+    },
+    accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] },
+    maxFiles: 1,
   });
 
   const resetHeroForm = () => {
@@ -217,30 +185,10 @@ export default function AdminContentPage() {
     setHeroDialogOpen(false);
   };
 
-  const resetBannerForm = () => {
-    setBannerForm({
-      title: '',
-      subtitle: '',
-      buttonText: '',
-      buttonLink: '',
-      position: 'middle',
-      isActive: true,
-    });
-    setImageFile(null);
-    setEditBanner(null);
-    setBannerDialogOpen(false);
-  };
-
   const handleEditHero = (slide: HeroSlide) => {
     setEditHeroSlide(slide);
     setHeroForm(slide);
     setHeroDialogOpen(true);
-  };
-
-  const handleEditBanner = (banner: Banner) => {
-    setEditBanner(banner);
-    setBannerForm(banner);
-    setBannerDialogOpen(true);
   };
 
   const handleHeroSubmit = (e: React.FormEvent) => {
@@ -252,27 +200,7 @@ export default function AdminContentPage() {
     }
   };
 
-  const handleBannerSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editBanner?._id) {
-      updateBannerMutation.mutate({ id: editBanner._id, banner: bannerForm });
-    } else {
-      addBannerMutation.mutate(bannerForm as Banner);
-    }
-  };
-
   const heroDropzone = useDropzone({
-    onDrop: async (files) => {
-      if (files[0]) {
-        const base64 = await fileToBase64(files[0]);
-        setImageFile(base64);
-      }
-    },
-    accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] },
-    maxFiles: 1,
-  });
-
-  const bannerDropzone = useDropzone({
     onDrop: async (files) => {
       if (files[0]) {
         const base64 = await fileToBase64(files[0]);
@@ -304,7 +232,7 @@ export default function AdminContentPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="hero">Hero Slides</TabsTrigger>
-          <TabsTrigger value="banners">Banners</TabsTrigger>
+          <TabsTrigger value="floating">Floating Elements</TabsTrigger>
           <TabsTrigger value="announcement">Announcement</TabsTrigger>
         </TabsList>
 
@@ -380,81 +308,222 @@ export default function AdminContentPage() {
           </div>
         </TabsContent>
 
-        {/* Banners */}
-        <TabsContent value="banners" className="mt-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Promotional Banners</h2>
-            <Button onClick={() => setBannerDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Banner
-            </Button>
-          </div>
-
-          <div className="grid gap-4">
-            {settings?.banners?.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <LayoutTemplate className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No banners yet</p>
-                </CardContent>
-              </Card>
-            ) : (
-              settings?.banners?.map((banner) => (
-                <motion.div
-                  key={banner._id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex gap-4 p-4 bg-card rounded-xl border"
-                >
-                  <div className="w-32 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
-                    {banner.image && (
-                      <img
-                        src={banner.image}
-                        alt={banner.title}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold">{banner.title}</h3>
-                      <span className="text-xs bg-muted px-2 py-0.5 rounded capitalize">
-                        {banner.position}
-                      </span>
-                      {!banner.isActive && (
-                        <span className="text-xs bg-muted px-2 py-0.5 rounded">
-                          Inactive
-                        </span>
+        {/* Floating Elements */}
+        <TabsContent value="floating" className="mt-6 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                Floating Elements
+              </CardTitle>
+              <CardDescription>
+                Customize the floating decorative elements on the hero section. 
+                You can use icons or upload transparent PNG images of products.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {(settings?.floatingElements || [
+                { _id: 'default-1', type: 'icon', icon: 'heart', position: 'top-right', isActive: true },
+                { _id: 'default-2', type: 'icon', icon: 'star', position: 'bottom-right', isActive: true },
+                { _id: 'default-3', type: 'icon', icon: 'sparkles', position: 'middle-left', isActive: true },
+              ]).map((element) => (
+                <div key={element._id} className="p-4 border rounded-xl space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {element.type === 'icon' ? (
+                        <div className="w-12 h-12 rounded-full bg-brand-pink/20 flex items-center justify-center">
+                          {element.icon === 'heart' && <Heart className="w-6 h-6 text-brand-pink" />}
+                          {element.icon === 'star' && <Star className="w-6 h-6 text-brand-pink" />}
+                          {element.icon === 'sparkles' && <Sparkles className="w-6 h-6 text-brand-pink" />}
+                        </div>
+                      ) : element.image ? (
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted">
+                          <img src={element.image} alt="" className="w-full h-full object-contain" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                          <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                        </div>
                       )}
+                      <div>
+                        <p className="font-medium capitalize">
+                          {element.position.replace('-', ' ')}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {element.type === 'icon' ? `Icon: ${element.icon}` : 'Custom Image'}
+                        </p>
+                      </div>
                     </div>
-                    {banner.subtitle && (
-                      <p className="text-sm text-muted-foreground">
-                        {banner.subtitle}
-                      </p>
-                    )}
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-sm">Active</Label>
+                        <Switch
+                          checked={element.isActive}
+                          onCheckedChange={(checked) => 
+                            element._id && updateFloatingElementMutation.mutate({
+                              id: element._id,
+                              element: { isActive: checked }
+                            })
+                          }
+                        />
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingFloatingElement(
+                          editingFloatingElement === element._id ? null : element._id || null
+                        )}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditBanner(banner)}
+
+                  {editingFloatingElement === element._id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="pt-4 border-t space-y-4"
                     >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() =>
-                        banner._id && removeBannerMutation.mutate(banner._id)
-                      }
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </motion.div>
-              ))
-            )}
-          </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Type</Label>
+                          <Select
+                            value={element.type}
+                            onValueChange={(value: 'icon' | 'image') => 
+                              element._id && updateFloatingElementMutation.mutate({
+                                id: element._id,
+                                element: { 
+                                  type: value,
+                                  ...(value === 'icon' ? { icon: 'heart', image: undefined, imagePublicId: undefined } : {})
+                                }
+                              })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="icon">Icon</SelectItem>
+                              <SelectItem value="image">Image</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {element.type === 'icon' && (
+                          <div className="space-y-2">
+                            <Label>Icon</Label>
+                            <Select
+                              value={element.icon}
+                              onValueChange={(value: 'heart' | 'star' | 'sparkles') => 
+                                element._id && updateFloatingElementMutation.mutate({
+                                  id: element._id,
+                                  element: { icon: value }
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="heart">
+                                  <span className="flex items-center gap-2">
+                                    <Heart className="w-4 h-4" /> Heart
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="star">
+                                  <span className="flex items-center gap-2">
+                                    <Star className="w-4 h-4" /> Star
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="sparkles">
+                                  <span className="flex items-center gap-2">
+                                    <Sparkles className="w-4 h-4" /> Sparkles
+                                  </span>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </div>
+
+                      {element.type === 'image' && (
+                        <div className="space-y-2">
+                          <Label>Image (PNG with transparent background recommended)</Label>
+                          <div
+                            {...floatingDropzone.getRootProps()}
+                            className={`relative h-32 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${
+                              floatingDropzone.isDragActive
+                                ? 'border-brand-pink bg-brand-pink/10'
+                                : 'border-border hover:border-brand-pink'
+                            }`}
+                          >
+                            <input {...floatingDropzone.getInputProps()} />
+                            {floatingImageFile || element.image ? (
+                              <>
+                                <img
+                                  src={floatingImageFile || element.image}
+                                  alt=""
+                                  className="h-full object-contain"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (floatingImageFile) {
+                                      // Just clear the local preview
+                                      setFloatingImageFile(null);
+                                    } else if (element.image && element._id) {
+                                      // Delete from database - switch back to icon
+                                      updateFloatingElementMutation.mutate({
+                                        id: element._id,
+                                        element: { 
+                                          type: 'icon', 
+                                          icon: 'heart',
+                                          image: undefined,
+                                          imagePublicId: undefined
+                                        }
+                                      });
+                                    }
+                                  }}
+                                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                  title="Remove image"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </>
+                            ) : (
+                              <div className="text-center">
+                                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">
+                                  Upload transparent PNG image
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          {floatingImageFile && (
+                            <Button
+                              onClick={() => element._id && updateFloatingElementMutation.mutate({
+                                id: element._id,
+                                element: {},
+                                newImage: floatingImageFile
+                              })}
+                              disabled={updateFloatingElementMutation.isPending || uploading}
+                              className="w-full"
+                            >
+                              {uploading ? 'Uploading...' : 'Save Image'}
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Announcement */}
@@ -624,147 +693,6 @@ export default function AdminContentPage() {
                 disabled={
                   addHeroMutation.isPending ||
                   updateHeroMutation.isPending ||
-                  uploading
-                }
-              >
-                {uploading ? 'Uploading...' : 'Save'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Banner Dialog */}
-      <Dialog open={bannerDialogOpen} onOpenChange={(open) => !open && resetBannerForm()}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
-              {editBanner ? 'Edit Banner' : 'Add Banner'}
-            </DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={handleBannerSubmit} className="space-y-4">
-            <div
-              {...bannerDropzone.getRootProps()}
-              className={`relative h-32 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${
-                bannerDropzone.isDragActive
-                  ? 'border-brand-pink bg-brand-pink/10'
-                  : 'border-border hover:border-brand-pink'
-              }`}
-            >
-              <input {...bannerDropzone.getInputProps()} />
-              {imageFile || bannerForm.image ? (
-                <>
-                  <img
-                    src={imageFile || bannerForm.image}
-                    alt=""
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setImageFile(null);
-                      setBannerForm((p) => ({ ...p, image: undefined }));
-                    }}
-                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </>
-              ) : (
-                <div className="text-center">
-                  <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Upload banner image</p>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Title *</Label>
-              <Input
-                value={bannerForm.title || ''}
-                onChange={(e) =>
-                  setBannerForm((p) => ({ ...p, title: e.target.value }))
-                }
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Subtitle</Label>
-              <Input
-                value={bannerForm.subtitle || ''}
-                onChange={(e) =>
-                  setBannerForm((p) => ({ ...p, subtitle: e.target.value }))
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Position</Label>
-              <Select
-                value={bannerForm.position || 'middle'}
-                onValueChange={(value) =>
-                  setBannerForm((p) => ({
-                    ...p,
-                    position: value as 'top' | 'middle' | 'bottom',
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="top">Top</SelectItem>
-                  <SelectItem value="middle">Middle</SelectItem>
-                  <SelectItem value="bottom">Bottom</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Button Text</Label>
-                <Input
-                  value={bannerForm.buttonText || ''}
-                  onChange={(e) =>
-                    setBannerForm((p) => ({ ...p, buttonText: e.target.value }))
-                  }
-                  placeholder="Shop Now"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Button Link</Label>
-                <Input
-                  value={bannerForm.buttonLink || ''}
-                  onChange={(e) =>
-                    setBannerForm((p) => ({ ...p, buttonLink: e.target.value }))
-                  }
-                  placeholder="/shop"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label>Active</Label>
-              <Switch
-                checked={bannerForm.isActive}
-                onCheckedChange={(checked) =>
-                  setBannerForm((p) => ({ ...p, isActive: checked }))
-                }
-              />
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={resetBannerForm}>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={
-                  addBannerMutation.isPending ||
-                  updateBannerMutation.isPending ||
                   uploading
                 }
               >

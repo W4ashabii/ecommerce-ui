@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 
@@ -30,8 +30,12 @@ function CallbackContent() {
   const searchParams = useSearchParams();
   const { handleCallback } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const processedRef = useRef(false);
 
   useEffect(() => {
+    // Prevent double execution in React StrictMode
+    if (processedRef.current) return;
+    
     const code = searchParams.get('code');
     const errorParam = searchParams.get('error');
 
@@ -47,6 +51,9 @@ function CallbackContent() {
       return;
     }
 
+    // Mark as processed to prevent double execution
+    processedRef.current = true;
+
     // Exchange code for token
     handleCallback(code)
       .then(() => {
@@ -58,6 +65,8 @@ function CallbackContent() {
       .catch((err) => {
         console.error('Auth callback error:', err);
         setError('Failed to complete authentication');
+        // Reset so user can try again
+        processedRef.current = false;
         setTimeout(() => router.push('/auth/signin'), 3000);
       });
   }, [searchParams, handleCallback, router]);

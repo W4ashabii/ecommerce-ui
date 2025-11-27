@@ -13,8 +13,8 @@ import { formatPrice, cn } from '@/lib/utils';
 import { useTheme } from '@/lib/theme-context';
 
 export default function HomePage() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { mode } = useTheme();
+  const isDark = mode === 'dark';
 
   const { data: settings } = useQuery({
     queryKey: ['settings'],
@@ -155,12 +155,7 @@ export default function HomePage() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button size="xl" variant="outline" className={cn(
-                  "transition-colors duration-500",
-                  isDark 
-                    ? "border-brand-pink text-brand-pink hover:bg-brand-pink hover:text-white" 
-                    : "border-brand-pink text-brand-pink hover:bg-brand-pink hover:text-white"
-                )} asChild>
+                <Button size="xl" variant="outline" className="transition-colors duration-500" asChild>
                   <Link href="/collections">
                     View Collections
                   </Link>
@@ -286,39 +281,75 @@ export default function HomePage() {
                   </motion.div>
                 )}
 
-                {/* Floating Elements */}
-                <motion.div
-                  animate={{ y: [-10, 10, -10] }}
-                  transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                  className={cn(
-                    "absolute -top-5 right-20 w-12 h-12 rounded-full backdrop-blur-sm flex items-center justify-center transition-colors duration-500",
-                    isDark ? "bg-brand-pink/30" : "bg-brand-pink/20"
-                  )}
-                >
-                  <Heart className="w-6 h-6 text-brand-pink" />
-                </motion.div>
-
-                <motion.div
-                  animate={{ y: [10, -10, 10] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                  className={cn(
-                    "absolute bottom-20 -right-5 w-10 h-10 rounded-full backdrop-blur-sm flex items-center justify-center transition-colors duration-500",
-                    isDark ? "bg-purple-500/30" : "bg-brand-baby-pink/50"
-                  )}
-                >
-                  <Star className={cn("w-5 h-5", isDark ? "text-purple-400" : "text-brand-pink")} />
-                </motion.div>
-
-                <motion.div
-                  animate={{ y: [-5, 15, -5] }}
-                  transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-                  className={cn(
-                    "absolute top-1/2 -left-5 w-8 h-8 rounded-full backdrop-blur-sm flex items-center justify-center transition-colors duration-500",
-                    isDark ? "bg-rose-400/30" : "bg-brand-pink/20"
-                  )}
-                >
-                  <Sparkles className={cn("w-4 h-4", isDark ? "text-rose-300" : "text-brand-pink")} />
-                </motion.div>
+                {/* Floating Elements - Configurable */}
+                {(settings?.floatingElements || [
+                  { type: 'icon', icon: 'heart', position: 'top-right', isActive: true },
+                  { type: 'icon', icon: 'star', position: 'bottom-right', isActive: true },
+                  { type: 'icon', icon: 'sparkles', position: 'middle-left', isActive: true },
+                ]).filter(el => el.isActive).map((element, index) => {
+                  const positionClasses = {
+                    'top-right': 'absolute -top-20 right-0',
+                    'bottom-right': 'absolute bottom-0 -right-20',
+                    'middle-left': 'absolute top-1/3 -left-32',
+                  };
+                  // For icons, keep smaller sizes. For images, use larger sizes (2x)
+                  const iconContainerSizes = {
+                    'top-right': 'w-32 h-32',
+                    'bottom-right': 'w-28 h-28',
+                    'middle-left': 'w-24 h-24',
+                  };
+                  const imageSizes = {
+                    'top-right': 'w-[352px] h-[352px]',   // ~9cm
+                    'bottom-right': 'w-80 h-80',          // 320px ~8.5cm
+                    'middle-left': 'w-72 h-72',           // 288px ~7.6cm
+                  };
+                  const iconSizes = {
+                    'top-right': 'w-16 h-16',
+                    'bottom-right': 'w-14 h-14',
+                    'middle-left': 'w-12 h-12',
+                  };
+                  const animations = [
+                    { y: [-15, 15, -15], duration: 4 },
+                    { y: [15, -15, 15], duration: 3 },
+                    { y: [-10, 20, -10], duration: 5 },
+                  ];
+                  const bgClasses = {
+                    'top-right': isDark ? "bg-brand-pink/30" : "bg-brand-pink/20",
+                    'bottom-right': isDark ? "bg-purple-500/30" : "bg-brand-baby-pink/50",
+                    'middle-left': isDark ? "bg-rose-400/30" : "bg-brand-pink/20",
+                  };
+                  
+                  const isImage = element.type === 'image' && element.image;
+                  
+                  return (
+                    <motion.div
+                      key={element._id || index}
+                      animate={animations[index % 3]}
+                      transition={{ repeat: Infinity, duration: animations[index % 3].duration, ease: "easeInOut" }}
+                      className={cn(
+                        positionClasses[element.position],
+                        isImage ? imageSizes[element.position] : iconContainerSizes[element.position],
+                        "flex items-center justify-center transition-colors duration-500",
+                        isImage ? "rounded-2xl" : "rounded-full backdrop-blur-sm",
+                        isImage ? "bg-transparent" : bgClasses[element.position]
+                      )}
+                    >
+                      {element.type === 'icon' ? (
+                        <>
+                          {element.icon === 'heart' && <Heart className={cn(iconSizes[element.position], "text-brand-pink")} />}
+                          {element.icon === 'star' && <Star className={cn(iconSizes[element.position], isDark ? "text-purple-400" : "text-brand-pink")} />}
+                          {element.icon === 'sparkles' && <Sparkles className={cn(iconSizes[element.position], isDark ? "text-rose-300" : "text-brand-pink")} />}
+                        </>
+                      ) : element.image ? (
+                        <img 
+                          src={element.image} 
+                          alt="" 
+                          className="w-full h-full object-contain drop-shadow-2xl"
+                        />
+                      ) : null}
+                    </motion.div>
+                  );
+                })}
 
                 {/* Decorative Lines */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: -1 }}>
@@ -354,33 +385,6 @@ export default function HomePage() {
 
       </section>
 
-      {/* Features */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { icon: Star, title: 'Premium Quality', desc: 'Handcrafted with the finest materials' },
-              { icon: Heart, title: 'Designed with Love', desc: 'Each piece tells a unique story' },
-              { icon: Sparkles, title: 'Limited Editions', desc: 'Exclusive designs for you' },
-            ].map((feature, idx) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="text-center"
-              >
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-brand-pink/10 flex items-center justify-center">
-                  <feature.icon className="h-8 w-8 text-brand-pink" />
-                </div>
-                <h3 className="font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* New Arrivals */}
       <section className="py-20">

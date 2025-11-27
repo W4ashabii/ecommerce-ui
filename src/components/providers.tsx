@@ -3,8 +3,35 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ConfigProvider } from '@/lib/config';
-import { AuthProvider } from '@/lib/auth-context';
-import { ThemeProvider } from '@/lib/theme-context';
+import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { ThemeProvider, useTheme } from '@/lib/theme-context';
+import { RainEffect } from '@/components/effects/rain-effect';
+
+// Wrapper to connect auth and theme providers
+function ThemeWrapper({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  
+  return (
+    <ThemeProvider 
+      userTheme={user?.theme} 
+      isAuthenticated={!!user}
+    >
+      <ThemeEffects />
+      {children}
+    </ThemeProvider>
+  );
+}
+
+// Apply theme-specific effects
+function ThemeEffects() {
+  const { websiteTheme } = useTheme();
+  
+  if (websiteTheme === 'monsoon') {
+    return <RainEffect />;
+  }
+  
+  return null;
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -23,9 +50,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ConfigProvider>
         <AuthProvider>
-          <ThemeProvider>
+          <ThemeWrapper>
             {children}
-          </ThemeProvider>
+          </ThemeWrapper>
         </AuthProvider>
       </ConfigProvider>
     </QueryClientProvider>

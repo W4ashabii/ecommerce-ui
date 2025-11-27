@@ -3,60 +3,464 @@
 @tailwind utilities;
 
 @layer base {
+  /* =====================================================
+     FLORAL THEME (Pink/Rose) - Default
+     ===================================================== */
+  
+  /* Floral Dark (Default) */
   :root,
-  .dark {
-    /* Dark theme as default */
+  .dark,
+  .floral.dark {
     --background: 0 0% 7%;
     --foreground: 0 0% 98%;
     --card: 0 0% 10%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 10%;
     --popover-foreground: 0 0% 98%;
-    --primary: 330 100% 65%;
+    --primary: 329 100% 42%;
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 65%;
-    --accent: 330 100% 65%;
+    --accent: 329 100% 42%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 20%;
     --input: 0 0% 18%;
-    --ring: 330 100% 65%;
+    --ring: 329 100% 42%;
     --radius: 0.75rem;
-    
-    /* Dark theme specific */
+
     --navbar-bg: 0 0% 5%;
-    --navbar-text: 330 100% 65%;
+    --navbar-text: 329 100% 42%;
+    --brand-pink: #D5006D;
+    --brand-pink-light: #e93d8a;
+    --brand-pink-dark: #b00059;
+    --brand-pink-rgb: 213 0 109;
+    --brand-text: #FFFFFF;
+    --hero-gradient-from: 0 0% 7%;
+    --hero-gradient-to: 0 0% 5%;
+    --hero-orb-1: rgba(213, 0, 109, 0.2);
+    --hero-orb-2: rgba(213, 0, 109, 0.1);
+    --hero-orb-3: rgba(168, 85, 247, 0.1);
   }
 
-  /* Light theme - Beige, Baby Pink & White */
-  .light {
+  /* Floral Light */
+  .light,
+  .floral.light {
     --background: 30 20% 96%;
     --foreground: 20 15% 15%;
     --card: 0 0% 100%;
     --card-foreground: 20 15% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 20 15% 15%;
-    --primary: 340 80% 65%;
+    --primary: 330 100% 65%;
     --primary-foreground: 0 0% 100%;
     --secondary: 30 30% 92%;
     --secondary-foreground: 20 15% 15%;
     --muted: 30 20% 92%;
     --muted-foreground: 20 10% 40%;
-    --accent: 340 80% 65%;
+    --accent: 330 100% 65%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 30 15% 85%;
     --input: 30 20% 90%;
-    --ring: 340 80% 65%;
+    --ring: 330 100% 65%;
     
-    /* Light theme specific */
     --navbar-bg: 0 0% 100%;
-    --navbar-text: 340 80% 55%;
+    --navbar-text: 330 100% 65%;
+    --brand-pink: #ff4fa3;
+    --brand-pink-light: #ff7dc0;
+    --brand-pink-dark: #e6458f;
+    --brand-pink-rgb: 255 79 163;
+    --brand-text: #FFFFFF;
+    --hero-gradient-from: 30 20% 96%;
+    --hero-gradient-to: 0 0% 100%;
+    --hero-orb-1: rgba(255, 192, 203, 0.4);
+    --hero-orb-2: rgba(255, 79, 163, 0.2);
+    --hero-orb-3: rgba(255, 192, 203, 0.3);
+  }
+
+  /* =====================================================
+     SUMMER THEME (Orange/Golden)
+     ===================================================== */
+  
+  /* Summer Dark */
+  .summer.dark {
+    --background: 20 15% 7%;
+    --foreground: 35 30% 98%;
+    --card: 20 15% 10%;
+    --card-foreground: 35 30% 98%;
+    --popover: 20 15% 10%;
+    --popover-foreground: 35 30% 98%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 20 15% 15%;
+    --secondary-foreground: 35 30% 98%;
+    --muted: 20 15% 15%;
+    --muted-foreground: 35 15% 65%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 35 30% 98%;
+    --border: 20 15% 20%;
+    --input: 20 15% 18%;
+    --ring: 25 95% 53%;
+
+    --navbar-bg: 20 15% 5%;
+    --navbar-text: 25 95% 53%;
+    --brand-pink: #F97316;
+    --brand-pink-light: #FB923C;
+    --brand-pink-dark: #EA580C;
+    --brand-pink-rgb: 249 115 22;
+    --brand-text: #FFFFFF;
+    --hero-gradient-from: 20 15% 7%;
+    --hero-gradient-to: 25 20% 5%;
+    --hero-orb-1: rgba(249, 115, 22, 0.2);
+    --hero-orb-2: rgba(251, 191, 36, 0.15);
+    --hero-orb-3: rgba(234, 88, 12, 0.1);
+  }
+
+  /* Summer Light */
+  .summer.light {
+    --background: 40 35% 96%;
+    --foreground: 25 30% 15%;
+    --card: 45 40% 99%;
+    --card-foreground: 25 30% 15%;
+    --popover: 45 40% 99%;
+    --popover-foreground: 25 30% 15%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 40% 92%;
+    --secondary-foreground: 25 30% 15%;
+    --muted: 40 30% 92%;
+    --muted-foreground: 25 20% 40%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 25% 85%;
+    --input: 40 30% 90%;
+    --ring: 25 95% 53%;
+    
+    --navbar-bg: 45 40% 99%;
+    --navbar-text: 25 95% 53%;
+    --brand-pink: #F97316;
+    --brand-pink-light: #FB923C;
+    --brand-pink-dark: #EA580C;
+    --brand-pink-rgb: 249 115 22;
+    --brand-text: #FFFFFF;
+    --hero-gradient-from: 45 50% 96%;
+    --hero-gradient-to: 40 40% 98%;
+    --hero-orb-1: rgba(254, 215, 170, 0.5);
+    --hero-orb-2: rgba(251, 191, 36, 0.3);
+    --hero-orb-3: rgba(253, 230, 138, 0.4);
+  }
+
+  /* =====================================================
+     WINTER THEME (Blue/Icy)
+     ===================================================== */
+  
+  /* Winter Dark */
+  .winter.dark {
+    --background: 215 25% 7%;
+    --foreground: 210 30% 98%;
+    --card: 215 25% 10%;
+    --card-foreground: 210 30% 98%;
+    --popover: 215 25% 10%;
+    --popover-foreground: 210 30% 98%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 25% 15%;
+    --secondary-foreground: 210 30% 98%;
+    --muted: 215 25% 15%;
+    --muted-foreground: 210 15% 65%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 210 30% 98%;
+    --border: 215 25% 20%;
+    --input: 215 25% 18%;
+    --ring: 199 89% 48%;
+
+    --navbar-bg: 215 25% 5%;
+    --navbar-text: 199 89% 48%;
+    --brand-pink: #0EA5E9;
+    --brand-pink-light: #38BDF8;
+    --brand-pink-dark: #0284C7;
+    --brand-pink-rgb: 14 165 233;
+    --brand-text: #FFFFFF;
+    --hero-gradient-from: 215 25% 7%;
+    --hero-gradient-to: 220 30% 5%;
+    --hero-orb-1: rgba(14, 165, 233, 0.2);
+    --hero-orb-2: rgba(56, 189, 248, 0.15);
+    --hero-orb-3: rgba(186, 230, 253, 0.1);
+  }
+
+  /* Winter Light */
+  .winter.light {
+    --background: 205 35% 97%;
+    --foreground: 215 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 30% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 30% 15%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 205 40% 93%;
+    --secondary-foreground: 215 30% 15%;
+    --muted: 205 30% 93%;
+    --muted-foreground: 215 20% 40%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 205 25% 88%;
+    --input: 205 30% 92%;
+    --ring: 199 89% 48%;
+    
+    --navbar-bg: 0 0% 100%;
+    --navbar-text: 199 89% 48%;
+    --brand-pink: #0EA5E9;
+    --brand-pink-light: #38BDF8;
+    --brand-pink-dark: #0284C7;
+    --brand-pink-rgb: 14 165 233;
+    --brand-text: #FFFFFF;
+    --hero-gradient-from: 205 40% 97%;
+    --hero-gradient-to: 200 35% 99%;
+    --hero-orb-1: rgba(224, 242, 254, 0.6);
+    --hero-orb-2: rgba(186, 230, 253, 0.4);
+    --hero-orb-3: rgba(125, 211, 252, 0.3);
+  }
+
+  /* =====================================================
+     MONSOON THEME (Teal/Gray - Gloomy)
+     ===================================================== */
+  
+  /* Monsoon Dark */
+  .monsoon.dark {
+    --background: 200 10% 8%;
+    --foreground: 180 10% 95%;
+    --card: 200 10% 11%;
+    --card-foreground: 180 10% 95%;
+    --popover: 200 10% 11%;
+    --popover-foreground: 180 10% 95%;
+    --primary: 168 76% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 10% 15%;
+    --secondary-foreground: 180 10% 95%;
+    --muted: 200 10% 15%;
+    --muted-foreground: 180 5% 55%;
+    --accent: 168 76% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 180 10% 95%;
+    --border: 200 10% 18%;
+    --input: 200 10% 16%;
+    --ring: 168 76% 42%;
+
+    --navbar-bg: 200 10% 6%;
+    --navbar-text: 168 76% 42%;
+    --brand-pink: #14B8A6;
+    --brand-pink-light: #2DD4BF;
+    --brand-pink-dark: #0D9488;
+    --brand-pink-rgb: 20 184 166;
+    --brand-text: #FFFFFF;
+    --hero-gradient-from: 200 10% 8%;
+    --hero-gradient-to: 210 15% 6%;
+    --hero-orb-1: rgba(20, 184, 166, 0.15);
+    --hero-orb-2: rgba(94, 234, 212, 0.1);
+    --hero-orb-3: rgba(100, 116, 139, 0.15);
+  }
+
+  /* Monsoon Light */
+  .monsoon.light {
+    --background: 200 15% 92%;
+    --foreground: 200 15% 15%;
+    --card: 200 10% 97%;
+    --card-foreground: 200 15% 15%;
+    --popover: 200 10% 97%;
+    --popover-foreground: 200 15% 15%;
+    --primary: 168 76% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 15% 88%;
+    --secondary-foreground: 200 15% 15%;
+    --muted: 200 12% 88%;
+    --muted-foreground: 200 10% 40%;
+    --accent: 168 76% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 200 12% 82%;
+    --input: 200 12% 88%;
+    --ring: 168 76% 42%;
+    
+    --navbar-bg: 200 10% 97%;
+    --navbar-text: 168 76% 42%;
+    --brand-pink: #14B8A6;
+    --brand-pink-light: #2DD4BF;
+    --brand-pink-dark: #0D9488;
+    --brand-pink-rgb: 20 184 166;
+    --brand-text: #FFFFFF;
+    --hero-gradient-from: 200 15% 92%;
+    --hero-gradient-to: 200 12% 95%;
+    --hero-orb-1: rgba(153, 246, 228, 0.3);
+    --hero-orb-2: rgba(94, 234, 212, 0.2);
+    --hero-orb-3: rgba(148, 163, 184, 0.25);
+  }
+
+  /* =====================================================
+     CLASSY THEME (Brown/Beige - Old Money)
+     ===================================================== */
+  
+  /* Classy Dark */
+  .classy.dark {
+    --background: 30 15% 8%;
+    --foreground: 35 20% 95%;
+    --card: 30 15% 11%;
+    --card-foreground: 35 20% 95%;
+    --popover: 30 15% 11%;
+    --popover-foreground: 35 20% 95%;
+    --primary: 30 50% 40%;
+    --primary-foreground: 35 20% 98%;
+    --secondary: 30 15% 15%;
+    --secondary-foreground: 35 20% 95%;
+    --muted: 30 15% 15%;
+    --muted-foreground: 35 10% 55%;
+    --accent: 35 40% 45%;
+    --accent-foreground: 35 20% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 35 20% 95%;
+    --border: 30 15% 20%;
+    --input: 30 15% 18%;
+    --ring: 30 50% 40%;
+
+    --navbar-bg: 30 15% 6%;
+    --navbar-text: 35 40% 55%;
+    --brand-pink: #A0826D;
+    --brand-pink-light: #C4A484;
+    --brand-pink-dark: #8B6F5C;
+    --brand-pink-rgb: 160 130 109;
+    --brand-text: #FFFFFF;
+    --hero-gradient-from: 30 15% 8%;
+    --hero-gradient-to: 25 20% 6%;
+    --hero-orb-1: rgba(160, 130, 109, 0.2);
+    --hero-orb-2: rgba(196, 164, 132, 0.15);
+    --hero-orb-3: rgba(139, 111, 92, 0.12);
+  }
+
+  /* Classy Light */
+  .classy.light {
+    --background: 40 30% 95%;
+    --foreground: 30 30% 15%;
+    --card: 40 35% 98%;
+    --card-foreground: 30 30% 15%;
+    --popover: 40 35% 98%;
+    --popover-foreground: 30 30% 15%;
+    --primary: 30 45% 35%;
+    --primary-foreground: 40 30% 98%;
+    --secondary: 40 25% 90%;
+    --secondary-foreground: 30 30% 15%;
+    --muted: 40 20% 90%;
+    --muted-foreground: 30 15% 40%;
+    --accent: 35 40% 40%;
+    --accent-foreground: 40 30% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 20% 85%;
+    --input: 40 25% 90%;
+    --ring: 30 45% 35%;
+    
+    --navbar-bg: 40 35% 98%;
+    --navbar-text: 30 45% 35%;
+    --brand-pink: #8B6F5C;
+    --brand-pink-light: #A0826D;
+    --brand-pink-dark: #6B5344;
+    --brand-pink-rgb: 139 111 92;
+    --brand-text: #FFFFFF;
+    --hero-gradient-from: 40 30% 95%;
+    --hero-gradient-to: 35 35% 97%;
+    --hero-orb-1: rgba(245, 235, 220, 0.6);
+    --hero-orb-2: rgba(210, 180, 150, 0.4);
+    --hero-orb-3: rgba(230, 210, 185, 0.5);
+  }
+
+  /* =====================================================
+     MONOCHROME THEME (Black & White)
+     ===================================================== */
+  
+  /* Monochrome Dark */
+  .monochrome.dark {
+    --background: 0 0% 5%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 90%;
+    --accent-foreground: 0 0% 5%;
+    --destructive: 0 0% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 18%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 100%;
+
+    --navbar-bg: 0 0% 3%;
+    --navbar-text: 0 0% 100%;
+    --brand-pink: #FFFFFF;
+    --brand-pink-light: #E5E5E5;
+    --brand-pink-dark: #CCCCCC;
+    --brand-pink-rgb: 255 255 255;
+    --brand-text: #000000;
+    --hero-gradient-from: 0 0% 5%;
+    --hero-gradient-to: 0 0% 3%;
+    --hero-orb-1: rgba(255, 255, 255, 0.08);
+    --hero-orb-2: rgba(200, 200, 200, 0.06);
+    --hero-orb-3: rgba(180, 180, 180, 0.05);
+  }
+
+  /* Monochrome Light */
+  .monochrome.light {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+    --primary: 0 0% 10%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 0% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 88%;
+    --input: 0 0% 93%;
+    --ring: 0 0% 10%;
+    
+    --navbar-bg: 0 0% 100%;
+    --navbar-text: 0 0% 10%;
+    --brand-pink: #1A1A1A;
+    --brand-pink-light: #333333;
+    --brand-pink-dark: #000000;
+    --brand-pink-rgb: 26 26 26;
+    --brand-text: #FFFFFF;
+    --hero-gradient-from: 0 0% 98%;
+    --hero-gradient-to: 0 0% 100%;
+    --hero-orb-1: rgba(0, 0, 0, 0.04);
+    --hero-orb-2: rgba(50, 50, 50, 0.03);
+    --hero-orb-3: rgba(100, 100, 100, 0.03);
   }
 }
 
@@ -81,16 +485,18 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-brand-pink/30 rounded-full;
+    background-color: rgb(var(--brand-pink-rgb) / 0.3);
+    @apply rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-brand-pink/50;
+    background-color: rgb(var(--brand-pink-rgb) / 0.5);
   }
 
   /* Selection */
   ::selection {
-    @apply bg-brand-pink/30 text-white;
+    background-color: rgb(var(--brand-pink-rgb) / 0.3);
+    @apply text-white;
   }
 }
 
@@ -106,11 +512,11 @@
 
   /* Glow effects */
   .glow-pink {
-    box-shadow: 0 0 30px rgba(255, 79, 163, 0.3);
+    box-shadow: 0 0 30px rgb(var(--brand-pink-rgb) / 0.3);
   }
 
   .glow-pink-strong {
-    box-shadow: 0 0 50px rgba(255, 79, 163, 0.5);
+    box-shadow: 0 0 50px rgb(var(--brand-pink-rgb) / 0.5);
   }
 
   /* Text gradients */
@@ -127,8 +533,66 @@
 
   .btn-outline {
     @apply border-2 border-brand-pink text-brand-pink px-6 py-3 rounded-lg font-medium 
-           transition-all duration-300 hover:bg-brand-pink hover:text-white 
+           transition-all duration-300 hover:bg-brand-pink hover:text-white
            active:scale-95;
+  }
+  
+  /* Monochrome dark theme overrides */
+  
+  /* Buttons with brand-pink background get black text */
+  .monochrome.dark .btn-primary,
+  .monochrome.dark .bg-brand-pink,
+  .monochrome.dark [class*="bg-brand-pink"]:not([class*="border-brand-pink"]) {
+    color: #000000 !important;
+  }
+  
+  /* Outline buttons: white border & text normally, black text on hover */
+  .monochrome.dark [class*="border-brand-pink"] {
+    border-color: #FFFFFF !important;
+    color: #FFFFFF !important;
+  }
+  
+  .monochrome.dark [class*="border-brand-pink"]:hover {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  
+  /* Override Tailwind hover:text-white for monochrome dark */
+  .monochrome.dark [class*="hover\:text-white"]:hover {
+    color: #000000 !important;
+  }
+  
+  .monochrome.dark [class*="hover\:bg-brand-pink"]:hover {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  
+  /* Navbar icons should be white in dark mode */
+  .monochrome.dark nav svg,
+  .monochrome.dark header svg,
+  .monochrome.dark [class*="navbar"] svg {
+    color: #FFFFFF !important;
+  }
+  
+  /* Nav links and text should be white */
+  .monochrome.dark nav a,
+  .monochrome.dark header a:not([class*="text-brand-pink"]) {
+    color: #FFFFFF !important;
+  }
+  
+  /* Brand pink text should be white in monochrome dark */
+  .monochrome.dark .text-brand-pink {
+    color: #FFFFFF !important;
+  }
+  
+  /* Hover states for brand-pink text */
+  .monochrome.dark .hover\:text-brand-pink:hover {
+    color: #CCCCCC !important;
+  }
+  
+  /* Cart and other interactive icons */
+  .monochrome.dark button svg {
+    color: #FFFFFF !important;
   }
 
   .btn-ghost {
@@ -157,6 +621,43 @@
   /* Skeleton loading */
   .skeleton {
     @apply bg-gradient-to-r from-muted via-muted/50 to-muted bg-[length:200%_100%] animate-shimmer rounded;
+  }
+
+  /* Rain effect for Monsoon theme */
+  .rain-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+  }
+
+  .rain-drop {
+    position: absolute;
+    width: 2px;
+    height: 20px;
+    background: linear-gradient(to bottom, transparent, rgba(var(--brand-pink-rgb) / 0.3));
+    animation: rain-fall linear infinite;
+  }
+
+  @keyframes rain-fall {
+    0% {
+      transform: translateY(-100vh);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh);
+      opacity: 0;
+    }
   }
 }
 
@@ -194,4 +695,3 @@
     padding-top: env(safe-area-inset-top);
   }
 }
-
