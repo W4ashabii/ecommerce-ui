@@ -167,10 +167,10 @@ export default function ProductPage() {
 
                   {/* Quick Actions */}
                   <div className="absolute top-4 right-4 flex flex-col gap-2">
-                    <button className="p-2 rounded-full bg-white/90 backdrop-blur-sm hover:bg-brand-pink hover:text-white transition-colors shadow-lg">
+                    <button className="p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border">
                       <Heart className="h-5 w-5" />
                     </button>
-                    <button className="p-2 rounded-full bg-white/90 backdrop-blur-sm hover:bg-brand-pink hover:text-white transition-colors shadow-lg">
+                    <button className="p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border">
                       <Share2 className="h-5 w-5" />
                     </button>
                   </div>
@@ -185,7 +185,7 @@ export default function ProductPage() {
                     'absolute bottom-4 left-4 px-4 py-2 rounded-lg font-medium text-sm transition-colors shadow-lg',
                     view3D
                       ? 'bg-brand-pink text-white'
-                      : 'bg-white/90 backdrop-blur-sm hover:bg-brand-pink hover:text-white'
+                      : 'bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white border border-border'
                   )}
                 >
                   {view3D ? 'View Photos' : 'View in 3D'}

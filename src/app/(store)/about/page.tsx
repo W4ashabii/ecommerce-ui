@@ -8,6 +8,8 @@ import { Heart, Sparkles, Star, ArrowRight, Check } from 'lucide-react';
 import { settingsApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTheme } from '@/lib/theme-context';
+import { cn } from '@/lib/utils';
 
 const defaultValues = [
   'Quality craftsmanship in every piece',
@@ -18,6 +20,9 @@ const defaultValues = [
 ];
 
 export default function AboutPage() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const { data: settings, isLoading } = useQuery({
     queryKey: ['settings'],
     queryFn: settingsApi.get,
@@ -52,20 +57,39 @@ export default function AboutPage() {
               priority
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-brand-black via-brand-pink/20 to-brand-black" />
+            <div className={cn(
+              "w-full h-full transition-colors duration-500",
+              isDark 
+                ? "bg-gradient-to-br from-brand-black via-brand-pink/20 to-brand-black" 
+                : "bg-gradient-to-br from-brand-beige via-brand-baby-pink/30 to-white"
+            )} />
           )}
-          <div className="absolute inset-0 bg-black/50" />
+          <div className={cn(
+            "absolute inset-0 transition-colors duration-500",
+            isDark ? "bg-black/50" : "bg-white/10"
+          )} />
           
           {/* Decorative Elements */}
-          <div className="absolute top-20 left-10 w-32 h-32 bg-brand-pink/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-10 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl" />
+          <div className={cn(
+            "absolute top-20 left-10 w-32 h-32 rounded-full blur-3xl transition-colors duration-500",
+            isDark ? "bg-brand-pink/20" : "bg-brand-baby-pink/40"
+          )} />
+          <div className={cn(
+            "absolute bottom-20 right-10 w-48 h-48 rounded-full blur-3xl transition-colors duration-500",
+            isDark ? "bg-purple-500/20" : "bg-brand-pink/20"
+          )} />
         </div>
 
         <div className="relative z-10 text-center px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white/80 text-sm mb-4"
+            className={cn(
+              "inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm text-sm mb-4 transition-colors duration-500",
+              isDark 
+                ? "bg-white/10 text-white/80" 
+                : "bg-brand-pink/10 text-brand-pink-dark border border-brand-pink/20"
+            )}
           >
             <Heart className="h-4 w-4 text-brand-pink" />
             {aboutPage?.subtitle || 'Our Story'}
@@ -75,7 +99,10 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-6xl font-display font-bold text-white mb-4"
+            className={cn(
+              "text-4xl md:text-6xl font-display font-bold mb-4 transition-colors duration-500",
+              isDark ? "text-white" : "text-gray-800"
+            )}
           >
             {aboutPage?.title || 'About AMI'}
           </motion.h1>
@@ -130,7 +157,7 @@ export default function AboutPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.3 }}
-                className="absolute -bottom-8 -left-8 bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-xl"
+                className="absolute -bottom-8 -left-8 bg-card border border-border rounded-2xl p-6 shadow-xl"
               >
                 <div className="text-3xl font-bold text-brand-pink mb-1">5000+</div>
                 <div className="text-sm text-muted-foreground">Happy Customers</div>
@@ -141,7 +168,7 @@ export default function AboutPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.4 }}
-                className="absolute -top-8 -right-8 bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-xl"
+                className="absolute -top-8 -right-8 bg-card border border-border rounded-2xl p-6 shadow-xl"
               >
                 <div className="text-3xl font-bold text-brand-pink mb-1">100%</div>
                 <div className="text-sm text-muted-foreground">Quality Assured</div>

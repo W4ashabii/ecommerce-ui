@@ -8,8 +8,13 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { categoriesApi, settingsApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTheme } from '@/lib/theme-context';
+import { cn } from '@/lib/utils';
 
 export default function CollectionsPage() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const { data: settings } = useQuery({
     queryKey: ['settings'],
     queryFn: settingsApi.get,
@@ -42,16 +47,39 @@ export default function CollectionsPage() {
               priority
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-brand-black via-purple-900/50 to-brand-black" />
+            <div className={cn(
+              "w-full h-full transition-colors duration-500",
+              isDark 
+                ? "bg-gradient-to-br from-brand-black via-purple-900/50 to-brand-black" 
+                : "bg-gradient-to-br from-white via-brand-baby-pink/40 to-brand-beige"
+            )} />
           )}
-          <div className="absolute inset-0 bg-black/50" />
+          <div className={cn(
+            "absolute inset-0 transition-colors duration-500",
+            isDark ? "bg-black/50" : "bg-white/10"
+          )} />
+          
+          {/* Decorative Elements */}
+          <div className={cn(
+            "absolute top-10 right-20 w-32 h-32 rounded-full blur-3xl transition-colors duration-500",
+            isDark ? "bg-brand-pink/20" : "bg-brand-baby-pink/50"
+          )} />
+          <div className={cn(
+            "absolute bottom-10 left-20 w-40 h-40 rounded-full blur-3xl transition-colors duration-500",
+            isDark ? "bg-purple-500/20" : "bg-brand-pink/20"
+          )} />
         </div>
 
         <div className="relative z-10 text-center px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white/80 text-sm mb-4"
+            className={cn(
+              "inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm text-sm mb-4 transition-colors duration-500",
+              isDark 
+                ? "bg-white/10 text-white/80" 
+                : "bg-brand-pink/10 text-brand-pink-dark border border-brand-pink/20"
+            )}
           >
             <Sparkles className="h-4 w-4 text-brand-pink" />
             Curated for You
@@ -61,7 +89,10 @@ export default function CollectionsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-6xl font-display font-bold text-white mb-4"
+            className={cn(
+              "text-4xl md:text-6xl font-display font-bold mb-4 transition-colors duration-500",
+              isDark ? "text-white" : "text-gray-800"
+            )}
           >
             {collectionsPage?.title || 'Collections'}
           </motion.h1>
@@ -70,7 +101,10 @@ export default function CollectionsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-lg text-white/70 max-w-2xl mx-auto"
+            className={cn(
+              "text-lg max-w-2xl mx-auto transition-colors duration-500",
+              isDark ? "text-white/70" : "text-gray-600"
+            )}
           >
             {collectionsPage?.subtitle || 'Explore our curated collections of sophisticated fashion pieces'}
           </motion.p>

@@ -58,7 +58,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 e.preventDefault();
                 // Add to wishlist logic
               }}
-              className="p-2 rounded-full bg-white/90 backdrop-blur-sm hover:bg-brand-pink hover:text-white transition-colors shadow-lg"
+              className="p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border"
             >
               <Heart className="h-4 w-4" />
             </button>
@@ -67,7 +67,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 e.preventDefault();
                 // Quick view logic
               }}
-              className="p-2 rounded-full bg-white/90 backdrop-blur-sm hover:bg-brand-pink hover:text-white transition-colors shadow-lg"
+              className="p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border"
             >
               <Eye className="h-4 w-4" />
             </button>
@@ -99,7 +99,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 e.preventDefault();
                 // Quick add to cart logic
               }}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-white text-brand-black rounded-lg font-medium hover:bg-brand-pink hover:text-white transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-brand-pink text-white rounded-lg font-medium hover:bg-brand-pink/80 transition-colors"
             >
               <ShoppingBag className="h-4 w-4" />
               Add to Cart

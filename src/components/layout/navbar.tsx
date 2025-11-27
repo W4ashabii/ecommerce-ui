@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Menu, X, User, Settings, LogOut } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { ShoppingBag, Menu, X, User, Settings, LogOut, Sun, Moon } from 'lucide-react';
+import { useState } from 'react';
 import { useCartStore } from '@/store/cart';
 import { useAuth } from '@/lib/auth-context';
+import { useTheme } from '@/lib/theme-context';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -24,44 +24,22 @@ const navLinks = [
   { href: '/about', label: 'About' },
 ];
 
-// Pages with dark hero sections where navbar should be transparent
-const darkHeroPages = ['/', '/collections', '/about'];
-
 export function Navbar() {
   const { user, isAdmin, signIn, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const { toggleCart, getItemCount } = useCartStore();
   const itemCount = getItemCount();
-  const pathname = usePathname();
 
-  // Check if current page has a dark hero
-  const hasDarkHero = darkHeroPages.includes(pathname);
-
-  // Listen for scroll to add background
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Check initial position
-    
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Determine if navbar should be transparent
-  const isTransparent = hasDarkHero && !scrolled && !mobileMenuOpen;
+  const isDark = theme === 'dark';
 
   return (
-    <header 
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isTransparent 
-          ? "bg-transparent border-transparent" 
-          : "bg-background/95 backdrop-blur-lg border-b border-border"
-      )}
-    >
+    <header className={cn(
+      "fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b transition-colors duration-300",
+      isDark 
+        ? "bg-brand-black/95 border-white/10" 
+        : "bg-white/95 border-brand-pink/20"
+    )}>
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
@@ -78,9 +56,9 @@ export function Navbar() {
               href={link.href}
               className={cn(
                 "text-sm font-medium transition-colors relative group",
-                isTransparent 
-                  ? "text-white/80 hover:text-white" 
-                  : "text-muted-foreground hover:text-foreground"
+                isDark 
+                  ? "text-brand-pink/80 hover:text-brand-pink" 
+                  : "text-gray-600 hover:text-brand-pink"
               )}
             >
               {link.label}
@@ -91,12 +69,32 @@ export function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-4">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className={cn(
+              "p-2 rounded-lg transition-colors",
+              isDark 
+                ? "hover:bg-white/10 text-brand-pink" 
+                : "hover:bg-brand-pink/10 text-brand-pink"
+            )}
+            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {isDark ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </button>
+
           {/* Cart */}
           <button
             onClick={toggleCart}
             className={cn(
               "relative p-2 rounded-lg transition-colors",
-              isTransparent ? "hover:bg-white/10 text-white" : "hover:bg-muted"
+              isDark 
+                ? "hover:bg-white/10 text-brand-pink" 
+                : "hover:bg-brand-pink/10 text-brand-pink"
             )}
           >
             <ShoppingBag className="h-5 w-5" />
@@ -117,13 +115,15 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <button className={cn(
                   "p-2 rounded-lg transition-colors",
-                  isTransparent ? "hover:bg-white/10 text-white" : "hover:bg-muted"
+                  isDark 
+                    ? "hover:bg-white/10 text-brand-pink" 
+                    : "hover:bg-brand-pink/10 text-brand-pink"
                 )}>
                   {user.picture ? (
                     <img
                       src={user.picture}
                       alt={user.name || 'User'}
-                      className="h-6 w-6 rounded-full"
+                      className="h-6 w-6 rounded-full ring-2 ring-brand-pink/50"
                     />
                   ) : (
                     <User className="h-5 w-5" />
@@ -158,10 +158,9 @@ export function Navbar() {
             </DropdownMenu>
           ) : (
             <Button
-              variant={isTransparent ? "secondary" : "outline"}
               size="sm"
               onClick={signIn}
-              className={isTransparent ? "bg-white/10 text-white border-white/20 hover:bg-white/20" : ""}
+              className="bg-brand-pink hover:bg-brand-pink/90 text-white"
             >
               Sign In
             </Button>
@@ -172,7 +171,9 @@ export function Navbar() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className={cn(
               "p-2 rounded-lg transition-colors md:hidden",
-              isTransparent ? "hover:bg-white/10 text-white" : "hover:bg-muted"
+              isDark 
+                ? "hover:bg-white/10 text-brand-pink" 
+                : "hover:bg-brand-pink/10 text-brand-pink"
             )}
           >
             {mobileMenuOpen ? (
@@ -191,7 +192,12 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-background border-b border-border"
+            className={cn(
+              "md:hidden border-b",
+              isDark 
+                ? "bg-brand-black border-white/10" 
+                : "bg-white border-brand-pink/20"
+            )}
           >
             <div className="container mx-auto px-4 py-4 space-y-2">
               {navLinks.map((link) => (
@@ -199,7 +205,12 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className={cn(
+                    "block py-2 text-sm font-medium transition-colors",
+                    isDark 
+                      ? "text-brand-pink/80 hover:text-brand-pink" 
+                      : "text-gray-600 hover:text-brand-pink"
+                  )}
                 >
                   {link.label}
                 </Link>
@@ -211,4 +222,3 @@ export function Navbar() {
     </header>
   );
 }
-

@@ -118,25 +118,25 @@ export function ModelViewer({ modelUrl, fallbackImage }: ModelViewerProps) {
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
         <button
           onClick={handleResetCamera}
-          className="p-2 rounded-lg bg-white/90 backdrop-blur-sm hover:bg-brand-pink hover:text-white transition-colors shadow-lg"
+          className="p-2 rounded-lg bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border"
           title="Reset View"
         >
           <RotateCcw className="h-4 w-4" />
         </button>
         <button
-          className="p-2 rounded-lg bg-white/90 backdrop-blur-sm hover:bg-brand-pink hover:text-white transition-colors shadow-lg"
+          className="p-2 rounded-lg bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border"
           title="Zoom In"
         >
           <ZoomIn className="h-4 w-4" />
         </button>
         <button
-          className="p-2 rounded-lg bg-white/90 backdrop-blur-sm hover:bg-brand-pink hover:text-white transition-colors shadow-lg"
+          className="p-2 rounded-lg bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border"
           title="Zoom Out"
         >
           <ZoomOut className="h-4 w-4" />
         </button>
         <button
-          className="p-2 rounded-lg bg-white/90 backdrop-blur-sm hover:bg-brand-pink hover:text-white transition-colors shadow-lg"
+          className="p-2 rounded-lg bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border"
           title="Fullscreen"
         >
           <Maximize2 className="h-4 w-4" />
@@ -144,7 +144,7 @@ export function ModelViewer({ modelUrl, fallbackImage }: ModelViewerProps) {
       </div>
 
       {/* Hint */}
-      <div className="absolute top-4 left-4 text-xs text-muted-foreground bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full">
+      <div className="absolute top-4 left-4 text-xs text-muted-foreground bg-card/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-border">
         Drag to rotate • Scroll to zoom
       </div>
 

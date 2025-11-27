@@ -3,49 +3,60 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-    --primary: 330 100% 65%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 0%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 330 100% 65%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 330 100% 65%;
-    --radius: 0.75rem;
-  }
-
+  :root,
   .dark {
-    --background: 0 0% 5%;
+    /* Dark theme as default */
+    --background: 0 0% 7%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 8%;
+    --card: 0 0% 10%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 8%;
+    --popover: 0 0% 10%;
     --popover-foreground: 0 0% 98%;
     --primary: 330 100% 65%;
-    --primary-foreground: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 60%;
+    --muted-foreground: 0 0% 65%;
     --accent: 330 100% 65%;
-    --accent-foreground: 0 0% 0%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --input: 0 0% 18%;
     --ring: 330 100% 65%;
+    --radius: 0.75rem;
+    
+    /* Dark theme specific */
+    --navbar-bg: 0 0% 5%;
+    --navbar-text: 330 100% 65%;
+  }
+
+  /* Light theme - Beige, Baby Pink & White */
+  .light {
+    --background: 30 20% 96%;
+    --foreground: 20 15% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 15% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 15% 15%;
+    --primary: 340 80% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 30% 92%;
+    --secondary-foreground: 20 15% 15%;
+    --muted: 30 20% 92%;
+    --muted-foreground: 20 10% 40%;
+    --accent: 340 80% 65%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 15% 85%;
+    --input: 30 20% 90%;
+    --ring: 340 80% 65%;
+    
+    /* Light theme specific */
+    --navbar-bg: 0 0% 100%;
+    --navbar-text: 340 80% 55%;
   }
 }
 
@@ -79,7 +90,7 @@
 
   /* Selection */
   ::selection {
-    @apply bg-brand-pink/30 text-brand-black;
+    @apply bg-brand-pink/30 text-white;
   }
 }
 

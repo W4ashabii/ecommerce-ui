@@ -12,10 +12,14 @@ const config: Config = {
       colors: {
         // Primary brand colors
         brand: {
-          black: '#000000',
+          black: '#0d0d0d',
           pink: '#ff4fa3',
           'pink-light': '#ff7dc0',
           'pink-dark': '#e6458f',
+          'baby-pink': '#ffc0cb',
+          beige: '#f5f0e8',
+          'beige-dark': '#e8e0d5',
+          cream: '#fdfbf7',
           white: '#ffffff',
         },
         // Semantic colors
