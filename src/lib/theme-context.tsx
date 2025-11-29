@@ -46,9 +46,10 @@ interface ThemeProviderProps {
   children: ReactNode;
   userTheme?: Mode;
   isAuthenticated?: boolean;
+  initialTheme?: WebsiteTheme; // Server-side fetched theme to prevent flash
 }
 
-export function ThemeProvider({ children, userTheme, isAuthenticated }: ThemeProviderProps) {
+export function ThemeProvider({ children, userTheme, isAuthenticated, initialTheme }: ThemeProviderProps) {
   const [mode, setModeState] = useState<Mode>('dark');
   const [mounted, setMounted] = useState(false);
 
@@ -64,30 +65,44 @@ export function ThemeProvider({ children, userTheme, isAuthenticated }: ThemePro
     refetchInterval: 60 * 1000, // Refetch every minute to catch admin theme changes
     retry: 3, // Retry up to 3 times if it fails
     retryDelay: 1000, // Wait 1 second between retries
+    // Use initialTheme as initial data to prevent flash
+    initialData: initialTheme ? { websiteTheme: initialTheme } as any : undefined,
   });
 
   // Force website theme from API - this overrides any local preference
   // Only admins can change this via the settings page
-  // Defaults to 'floral' if API call fails or theme is not set
-  const websiteTheme: WebsiteTheme = settings?.websiteTheme || 'floral';
+  // Use initialTheme first (from server-side), then settings from API
+  const websiteTheme: WebsiteTheme = settings?.websiteTheme || initialTheme || 'floral';
   
   // Log error if settings fetch fails (but continue with default theme)
   if (settingsError) {
     console.warn('Failed to fetch website theme from API, using default:', settingsError);
   }
 
-  // Load mode on mount
+  // Load mode and apply theme immediately on mount
   useEffect(() => {
+    const root = document.documentElement;
+    
+    // Determine initial mode
+    let initialMode: Mode = 'dark';
     if (userTheme) {
+      initialMode = userTheme;
       setModeState(userTheme);
     } else {
       const cookieMode = getCookie(MODE_COOKIE) as Mode | null;
       if (cookieMode === 'light' || cookieMode === 'dark') {
+        initialMode = cookieMode;
         setModeState(cookieMode);
       }
     }
+    
+    // Apply theme classes immediately (before React hydration completes)
+    root.classList.remove('dark', 'light', 'floral', 'summer', 'winter', 'monsoon', 'classy', 'monochrome');
+    root.classList.add(websiteTheme); // Use server-side theme immediately
+    root.classList.add(initialMode);
+    
     setMounted(true);
-  }, [userTheme]);
+  }, [userTheme, websiteTheme]);
 
   // Sync with user theme when it changes
   useEffect(() => {
@@ -96,7 +111,7 @@ export function ThemeProvider({ children, userTheme, isAuthenticated }: ThemePro
     }
   }, [userTheme, mounted]);
 
-  // Apply theme classes to document
+  // Apply theme classes when they change
   useEffect(() => {
     if (!mounted) return;
     

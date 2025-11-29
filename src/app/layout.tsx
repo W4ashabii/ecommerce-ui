@@ -22,15 +22,40 @@ export const metadata: Metadata = {
   keywords: ['fashion', 'clothing', 'elegant', 'luxury', 'women', 'boutique'],
 };
 
-export default function RootLayout({
+// Fetch theme server-side to prevent flash
+async function getWebsiteTheme(): Promise<string> {
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const response = await fetch(`${API_URL}/settings`, {
+      next: { revalidate: 30 }, // Revalidate every 30 seconds
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      const settings = await response.json();
+      return settings?.websiteTheme || 'floral';
+    }
+  } catch (error) {
+    console.error('Failed to fetch theme server-side:', error);
+  }
+  
+  return 'floral'; // Default fallback
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Fetch theme server-side to apply immediately
+  const websiteTheme = await getWebsiteTheme();
+  
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={websiteTheme}>
       <body className={`${outfit.variable} ${playfair.variable} font-sans antialiased`}>
-        <Providers>
+        <Providers initialTheme={websiteTheme}>
           {children}
           <Toaster 
             position="top-right" 

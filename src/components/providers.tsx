@@ -8,13 +8,14 @@ import { ThemeProvider, useTheme } from '@/lib/theme-context';
 import { RainEffect } from '@/components/effects/rain-effect';
 
 // Wrapper to connect auth and theme providers
-function ThemeWrapper({ children }: { children: React.ReactNode }) {
+function ThemeWrapper({ children, initialTheme }: { children: React.ReactNode; initialTheme?: string }) {
   const { user } = useAuth();
   
   return (
     <ThemeProvider 
       userTheme={user?.theme} 
       isAuthenticated={!!user}
+      initialTheme={initialTheme as any}
     >
       <ThemeEffects />
       {children}
@@ -33,7 +34,7 @@ function ThemeEffects() {
   return null;
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children, initialTheme }: { children: React.ReactNode; initialTheme?: string }) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -50,7 +51,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ConfigProvider>
         <AuthProvider>
-          <ThemeWrapper>
+          <ThemeWrapper initialTheme={initialTheme}>
             {children}
           </ThemeWrapper>
         </AuthProvider>
