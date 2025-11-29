@@ -17,7 +17,9 @@ You only need **one** environment variable for the frontend:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `NEXT_PUBLIC_API_URL` | Your deployed API URL | `https://amyz.vercel.app/api` |
+| `NEXT_PUBLIC_API_URL` | Your deployed API URL | `https://amyz-api.vercel.app/api` |
+
+**Note**: Your API is deployed at `amyz-api.vercel.app` and UI at `amyzz.vercel.app`
 
 **Important**: 
 - Must include the full URL with `https://`
@@ -31,11 +33,11 @@ You only need **one** environment variable for the frontend:
 3. Edit your OAuth 2.0 Client ID
 4. Add your frontend domain to **Authorized JavaScript origins**:
    ```
-   https://your-frontend-domain.vercel.app
+   https://amyzz.vercel.app
    ```
 5. Add to **Authorized redirect URIs**:
    ```
-   https://your-frontend-domain.vercel.app/auth/callback
+   https://amyzz.vercel.app/auth/callback
    ```
 
 ## Step 3: Deploy to Vercel

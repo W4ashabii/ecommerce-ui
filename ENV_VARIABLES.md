@@ -5,7 +5,7 @@
 Add this in **Vercel Dashboard > Settings > Environment Variables**:
 
 ```env
-NEXT_PUBLIC_API_URL=https://amyz.vercel.app/api
+NEXT_PUBLIC_API_URL=https://amyz-api.vercel.app/api
 ```
 
 ## Important Notes
