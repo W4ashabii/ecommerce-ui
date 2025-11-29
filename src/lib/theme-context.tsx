@@ -52,13 +52,19 @@ export function ThemeProvider({ children, userTheme, isAuthenticated }: ThemePro
   const [mode, setModeState] = useState<Mode>('dark');
   const [mounted, setMounted] = useState(false);
 
-  // Fetch website theme from settings
+  // Fetch website theme from settings - this is the global theme set by admin
+  // All users (admin and regular) will see this theme
   const { data: settings } = useQuery({
     queryKey: ['settings'],
     queryFn: settingsApi.get,
-    staleTime: 60 * 1000, // 1 minute
+    staleTime: 30 * 1000, // 30 seconds - refetch more frequently to catch admin changes
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchOnMount: true, // Always refetch on mount to get latest theme
+    refetchInterval: 60 * 1000, // Refetch every minute to catch admin theme changes
   });
 
+  // Force website theme from API - this overrides any local preference
+  // Only admins can change this via the settings page
   const websiteTheme: WebsiteTheme = settings?.websiteTheme || 'floral';
 
   // Load mode on mount

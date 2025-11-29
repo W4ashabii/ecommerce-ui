@@ -138,8 +138,11 @@ export default function AdminSettingsPage() {
   const updateThemeMutation = useMutation({
     mutationFn: (theme: WebsiteTheme) => settingsApi.updateWebsiteTheme(theme),
     onSuccess: () => {
+      // Invalidate settings query to force all users to refetch the new theme
       queryClient.invalidateQueries({ queryKey: ['settings'] });
-      toast.success('Website theme updated! All users will see the new theme.');
+      // Also refetch immediately to update the UI
+      queryClient.refetchQueries({ queryKey: ['settings'] });
+      toast.success('Website theme updated! All users will see the new theme immediately.');
     },
     onError: () => toast.error('Failed to update theme'),
   });
