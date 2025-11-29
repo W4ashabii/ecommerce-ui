@@ -158,11 +158,8 @@ export default function ProductFormPage() {
   const handleModelUpload = async (file: File) => {
     setUploadingModel(true);
     try {
-      const base64 = await fileToBase64(file);
-      const result = await uploadApi.uploadModel(
-        base64,
-        token || ''
-      );
+      // Use direct Cloudinary upload to bypass Vercel's 4.5MB body size limit
+      const result = await uploadApi.uploadModelDirect(file);
 
       setFormData((prev) => ({
         ...prev,
@@ -171,7 +168,8 @@ export default function ProductFormPage() {
       }));
       toast.success('3D model uploaded successfully');
     } catch (error) {
-      toast.error('Failed to upload 3D model');
+      console.error('Model upload error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to upload 3D model');
     } finally {
       setUploadingModel(false);
     }

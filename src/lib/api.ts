@@ -326,6 +326,54 @@ export const uploadApi = {
       body: JSON.stringify({ images }),
     }),
 
+  // Get Cloudinary upload signature for direct upload (bypasses Vercel body size limit)
+  getModelUploadSignature: () =>
+    request<{
+      signature: string;
+      timestamp: number;
+      folder: string;
+      cloudName: string;
+      apiKey: string;
+    }>('/upload/model/signature'),
+
+  // Direct upload to Cloudinary (bypasses API, no size limit)
+  uploadModelDirect: async (file: File): Promise<UploadResult> => {
+    // Get upload signature from API
+    const signatureData = await uploadApi.getModelUploadSignature();
+    
+    // Create FormData for Cloudinary direct upload
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('api_key', signatureData.apiKey);
+    formData.append('timestamp', signatureData.timestamp.toString());
+    formData.append('signature', signatureData.signature);
+    formData.append('folder', signatureData.folder);
+    formData.append('resource_type', 'raw');
+    
+    // Upload directly to Cloudinary
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${signatureData.cloudName}/raw/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Upload failed' }));
+      throw new Error(error.error || 'Failed to upload model');
+    }
+    
+    const result = await response.json();
+    
+    return {
+      url: result.secure_url,
+      publicId: result.public_id,
+      resourceType: result.resource_type,
+    };
+  },
+
+  // Legacy upload method (has size limits, kept for backward compatibility)
   uploadModel: (model: string, _token?: string) =>
     request<UploadResult>('/upload/model', {
       method: 'POST',
