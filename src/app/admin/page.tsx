@@ -145,7 +145,6 @@ export default function AdminDashboard() {
               {[
                 { label: 'Pending', value: orderStats?.pendingOrders || 0, color: 'bg-yellow-500' },
                 { label: 'Processing', value: orderStats?.processingOrders || 0, color: 'bg-blue-500' },
-                { label: 'Shipped', value: orderStats?.shippedOrders || 0, color: 'bg-purple-500' },
                 { label: 'Delivered', value: orderStats?.deliveredOrders || 0, color: 'bg-green-500' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center justify-between">

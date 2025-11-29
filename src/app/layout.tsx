@@ -37,8 +37,18 @@ async function getWebsiteTheme(): Promise<string> {
       const settings = await response.json();
       return settings?.websiteTheme || 'floral';
     }
-  } catch (error) {
-    console.error('Failed to fetch theme server-side:', error);
+  } catch (error: any) {
+    // Silently handle connection errors during build time
+    // These are expected when the API server isn't running during build
+    const isConnectionError = 
+      error?.code === 'ECONNREFUSED' || 
+      error?.cause?.code === 'ECONNREFUSED' ||
+      error?.message?.includes('ECONNREFUSED') ||
+      error?.message?.includes('fetch failed');
+    
+    if (!isConnectionError) {
+      console.error('Failed to fetch theme server-side:', error);
+    }
   }
   
   return 'floral'; // Default fallback

@@ -26,17 +26,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProductCard } from '@/components/products/product-card';
-import { ModelViewer, ModelViewerFallback } from '@/components/products/model-viewer';
-import dynamic from 'next/dynamic';
-
-// Dynamic import for 3D viewer to prevent SSR issues
-const DynamicModelViewer = dynamic(
-  () => import('@/components/products/model-viewer').then(mod => mod.ModelViewer),
-  { 
-    ssr: false,
-    loading: () => <Skeleton className="w-full aspect-square rounded-2xl" />
-  }
-);
 
 const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
@@ -49,7 +38,6 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
-  const [view3D, setView3D] = useState(false);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', slug],
@@ -80,7 +68,7 @@ export default function ProductPage() {
   }
 
   const currentVariant = product.colorVariants[selectedColor];
-  const images = currentVariant?.images || [];
+  const images = product.images || [];
   const hasDiscount = product.salePrice && product.salePrice < product.price;
   const discountPercent = hasDiscount
     ? getDiscountPercentage(product.price, product.salePrice!)
@@ -102,7 +90,7 @@ export default function ProductPage() {
       size: selectedSize,
       color: currentVariant?.name,
       colorHex: currentVariant?.hex,
-      image: images[0],
+      image: images[0] || '/placeholder-product.jpg',
     });
   };
 
@@ -132,69 +120,50 @@ export default function ProductPage() {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Images */}
           <div className="space-y-4">
-            {/* Main Image / 3D View */}
+            {/* Main Image */}
             <div className="relative">
-              {view3D && product.modelUrl ? (
-                <DynamicModelViewer modelUrl={product.modelUrl} />
-              ) : (
-                <motion.div
-                  key={activeImage}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="relative aspect-product rounded-2xl overflow-hidden bg-muted"
-                >
-                  {images[activeImage] ? (
-                    <Image
-                      src={images[activeImage]}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                      priority
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ShoppingBag className="h-16 w-16 text-muted-foreground" />
-                    </div>
-                  )}
-
-                  {/* Badges */}
-                  <div className="absolute top-4 left-4 flex flex-col gap-2">
-                    {product.isNewArrival && <Badge variant="pink">New</Badge>}
-                    {hasDiscount && (
-                      <Badge variant="destructive">-{discountPercent}%</Badge>
-                    )}
+              <motion.div
+                key={activeImage}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="relative aspect-product rounded-2xl overflow-hidden bg-muted"
+              >
+                {images[activeImage] ? (
+                  <Image
+                    src={images[activeImage]}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ShoppingBag className="h-16 w-16 text-muted-foreground" />
                   </div>
+                )}
 
-                  {/* Quick Actions */}
-                  <div className="absolute top-4 right-4 flex flex-col gap-2">
-                    <button className="p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border">
-                      <Heart className="h-5 w-5" />
-                    </button>
-                    <button className="p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border">
-                      <Share2 className="h-5 w-5" />
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* 3D Toggle */}
-              {product.modelUrl && (
-                <button
-                  onClick={() => setView3D(!view3D)}
-                  className={cn(
-                    'absolute bottom-4 left-4 px-4 py-2 rounded-lg font-medium text-sm transition-colors shadow-lg',
-                    view3D
-                      ? 'bg-brand-pink text-white'
-                      : 'bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white border border-border'
+                {/* Badges */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  {product.isNewArrival && <Badge variant="pink">New</Badge>}
+                  {hasDiscount && (
+                    <Badge variant="destructive">-{discountPercent}%</Badge>
                   )}
-                >
-                  {view3D ? 'View Photos' : 'View in 3D'}
-                </button>
-              )}
+                </div>
+
+                {/* Quick Actions */}
+                <div className="absolute top-4 right-4 flex flex-col gap-2">
+                  <button className="p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border">
+                    <Heart className="h-5 w-5" />
+                  </button>
+                  <button className="p-2 rounded-full bg-card/90 backdrop-blur-sm hover:bg-brand-pink text-foreground hover:text-white transition-colors shadow-lg border border-border">
+                    <Share2 className="h-5 w-5" />
+                  </button>
+                </div>
+              </motion.div>
             </div>
 
             {/* Thumbnails */}
-            {images.length > 1 && !view3D && (
+            {images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
                 {images.map((image, idx) => (
                   <button

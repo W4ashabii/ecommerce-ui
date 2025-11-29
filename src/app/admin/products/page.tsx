@@ -185,9 +185,9 @@ export default function AdminProductsPage() {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden">
-                          {product.colorVariants[0]?.images[0] ? (
+                          {product.images?.[0] ? (
                             <img
-                              src={product.colorVariants[0].images[0]}
+                              src={product.images[0]}
                               alt={product.name}
                               className="w-full h-full object-cover"
                             />

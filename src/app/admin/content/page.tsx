@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
@@ -12,11 +12,8 @@ import {
   Megaphone,
   Upload,
   X,
-  Heart,
-  Star,
-  Sparkles,
 } from 'lucide-react';
-import { settingsApi, uploadApi, HeroSlide, FloatingElement } from '@/lib/api';
+import { settingsApi, uploadApi, HeroSlide, categoriesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -63,6 +60,37 @@ export default function AdminContentPage() {
     queryKey: ['settings'],
     queryFn: settingsApi.get,
   });
+
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => categoriesApi.getAll(),
+  });
+
+  const [featuredCollectionForm, setFeaturedCollectionForm] = useState({
+    label: '',
+    title: '',
+    titleHighlight: '',
+    description: '',
+    buttonText: '',
+    collectionId: '',
+    isActive: true,
+  });
+
+  // Initialize featured collection form when settings load
+  useEffect(() => {
+    if (settings?.featuredCollection) {
+      const fc = settings.featuredCollection;
+      setFeaturedCollectionForm({
+        label: fc.label || 'Featured Collection',
+        title: fc.title || '',
+        titleHighlight: fc.titleHighlight || '',
+        description: fc.description || '',
+        buttonText: fc.buttonText || 'Explore Collection',
+        collectionId: fc.collectionId || '',
+        isActive: fc.isActive ?? true,
+      });
+    }
+  }, [settings]);
 
   const addHeroMutation = useMutation({
     mutationFn: async (slide: HeroSlide) => {
@@ -134,41 +162,14 @@ export default function AdminContentPage() {
     onError: () => toast.error('Failed to update announcement'),
   });
 
-  const updateFloatingElementMutation = useMutation({
-    mutationFn: async ({ id, element, newImage }: { id: string; element: Partial<FloatingElement>; newImage?: string }) => {
-      if (newImage) {
-        setUploading(true);
-        try {
-          const result = await uploadApi.uploadProductImage(newImage, token || '');
-          element.image = result.url;
-          element.imagePublicId = result.publicId;
-        } finally {
-          setUploading(false);
-        }
-      }
-      return settingsApi.updateFloatingElement(id, element, token || '');
-    },
+  const updateFeaturedCollectionMutation = useMutation({
+    mutationFn: (collection: typeof featuredCollectionForm) =>
+      settingsApi.updateFeaturedCollection(collection, token || ''),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] });
-      toast.success('Floating element updated');
-      setFloatingImageFile(null);
-      setEditingFloatingElement(null);
+      toast.success('Featured collection updated');
     },
-    onError: () => toast.error('Failed to update floating element'),
-  });
-
-  const [floatingImageFile, setFloatingImageFile] = useState<string | null>(null);
-  const [editingFloatingElement, setEditingFloatingElement] = useState<string | null>(null);
-
-  const floatingDropzone = useDropzone({
-    onDrop: async (files) => {
-      if (files[0]) {
-        const base64 = await fileToBase64(files[0]);
-        setFloatingImageFile(base64);
-      }
-    },
-    accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] },
-    maxFiles: 1,
+    onError: () => toast.error('Failed to update featured collection'),
   });
 
   const resetHeroForm = () => {
@@ -232,7 +233,7 @@ export default function AdminContentPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="hero">Hero Slides</TabsTrigger>
-          <TabsTrigger value="floating">Floating Elements</TabsTrigger>
+          <TabsTrigger value="featured">Featured Collection</TabsTrigger>
           <TabsTrigger value="announcement">Announcement</TabsTrigger>
         </TabsList>
 
@@ -308,220 +309,127 @@ export default function AdminContentPage() {
           </div>
         </TabsContent>
 
-        {/* Floating Elements */}
-        <TabsContent value="floating" className="mt-6 space-y-6">
+        {/* Featured Collection */}
+        <TabsContent value="featured" className="mt-6 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5" />
-                Floating Elements
-              </CardTitle>
+              <CardTitle>Featured Collection Section</CardTitle>
               <CardDescription>
-                Customize the floating decorative elements on the hero section. 
-                You can use icons or upload transparent PNG images of products.
+                Configure the featured collection section displayed on the homepage
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {(settings?.floatingElements || [
-                { _id: 'default-1', type: 'icon', icon: 'heart', position: 'top-right', isActive: true },
-                { _id: 'default-2', type: 'icon', icon: 'star', position: 'bottom-right', isActive: true },
-                { _id: 'default-3', type: 'icon', icon: 'sparkles', position: 'middle-left', isActive: true },
-              ]).map((element) => (
-                <div key={element._id} className="p-4 border rounded-xl space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {element.type === 'icon' ? (
-                        <div className="w-12 h-12 rounded-full bg-brand-pink/20 flex items-center justify-center">
-                          {element.icon === 'heart' && <Heart className="w-6 h-6 text-brand-pink" />}
-                          {element.icon === 'star' && <Star className="w-6 h-6 text-brand-pink" />}
-                          {element.icon === 'sparkles' && <Sparkles className="w-6 h-6 text-brand-pink" />}
-                        </div>
-                      ) : element.image ? (
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted">
-                          <img src={element.image} alt="" className="w-full h-full object-contain" />
-                        </div>
-                      ) : (
-                        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-                          <ImageIcon className="w-6 h-6 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-medium capitalize">
-                          {element.position.replace('-', ' ')}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {element.type === 'icon' ? `Icon: ${element.icon}` : 'Custom Image'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <Label className="text-sm">Active</Label>
-                        <Switch
-                          checked={element.isActive}
-                          onCheckedChange={(checked) => 
-                            element._id && updateFloatingElementMutation.mutate({
-                              id: element._id,
-                              element: { isActive: checked }
-                            })
-                          }
-                        />
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingFloatingElement(
-                          editingFloatingElement === element._id ? null : element._id || null
-                        )}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="fc-label">Label (Small Text Above Title)</Label>
+                <Input
+                  id="fc-label"
+                  value={featuredCollectionForm.label}
+                  onChange={(e) =>
+                    setFeaturedCollectionForm((prev) => ({ ...prev, label: e.target.value }))
+                  }
+                  placeholder="Featured Collection"
+                />
+              </div>
 
-                  {editingFloatingElement === element._id && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="pt-4 border-t space-y-4"
-                    >
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Type</Label>
-                          <Select
-                            value={element.type}
-                            onValueChange={(value: 'icon' | 'image') => 
-                              element._id && updateFloatingElementMutation.mutate({
-                                id: element._id,
-                                element: { 
-                                  type: value,
-                                  ...(value === 'icon' ? { icon: 'heart', image: undefined, imagePublicId: undefined } : {})
-                                }
-                              })
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="icon">Icon</SelectItem>
-                              <SelectItem value="image">Image</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {element.type === 'icon' && (
-                          <div className="space-y-2">
-                            <Label>Icon</Label>
-                            <Select
-                              value={element.icon}
-                              onValueChange={(value: 'heart' | 'star' | 'sparkles') => 
-                                element._id && updateFloatingElementMutation.mutate({
-                                  id: element._id,
-                                  element: { icon: value }
-                                })
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="heart">
-                                  <span className="flex items-center gap-2">
-                                    <Heart className="w-4 h-4" /> Heart
-                                  </span>
-                                </SelectItem>
-                                <SelectItem value="star">
-                                  <span className="flex items-center gap-2">
-                                    <Star className="w-4 h-4" /> Star
-                                  </span>
-                                </SelectItem>
-                                <SelectItem value="sparkles">
-                                  <span className="flex items-center gap-2">
-                                    <Sparkles className="w-4 h-4" /> Sparkles
-                                  </span>
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
-                      </div>
-
-                      {element.type === 'image' && (
-                        <div className="space-y-2">
-                          <Label>Image (PNG with transparent background recommended)</Label>
-                          <div
-                            {...floatingDropzone.getRootProps()}
-                            className={`relative h-32 rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${
-                              floatingDropzone.isDragActive
-                                ? 'border-brand-pink bg-brand-pink/10'
-                                : 'border-border hover:border-brand-pink'
-                            }`}
-                          >
-                            <input {...floatingDropzone.getInputProps()} />
-                            {floatingImageFile || element.image ? (
-                              <>
-                                <img
-                                  src={floatingImageFile || element.image}
-                                  alt=""
-                                  className="h-full object-contain"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (floatingImageFile) {
-                                      // Just clear the local preview
-                                      setFloatingImageFile(null);
-                                    } else if (element.image && element._id) {
-                                      // Delete from database - switch back to icon
-                                      updateFloatingElementMutation.mutate({
-                                        id: element._id,
-                                        element: { 
-                                          type: 'icon', 
-                                          icon: 'heart',
-                                          image: undefined,
-                                          imagePublicId: undefined
-                                        }
-                                      });
-                                    }
-                                  }}
-                                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                                  title="Remove image"
-                                >
-                                  <X className="h-4 w-4" />
-                                </button>
-                              </>
-                            ) : (
-                              <div className="text-center">
-                                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground">
-                                  Upload transparent PNG image
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                          {floatingImageFile && (
-                            <Button
-                              onClick={() => element._id && updateFloatingElementMutation.mutate({
-                                id: element._id,
-                                element: {},
-                                newImage: floatingImageFile
-                              })}
-                              disabled={updateFloatingElementMutation.isPending || uploading}
-                              className="w-full"
-                            >
-                              {uploading ? 'Uploading...' : 'Save Image'}
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fc-title">Title (First Line)</Label>
+                  <Input
+                    id="fc-title"
+                    value={featuredCollectionForm.title}
+                    onChange={(e) =>
+                      setFeaturedCollectionForm((prev) => ({ ...prev, title: e.target.value }))
+                    }
+                    placeholder="Summer"
+                  />
                 </div>
-              ))}
+                <div className="space-y-2">
+                  <Label htmlFor="fc-title-highlight">Title Highlight (Second Line)</Label>
+                  <Input
+                    id="fc-title-highlight"
+                    value={featuredCollectionForm.titleHighlight}
+                    onChange={(e) =>
+                      setFeaturedCollectionForm((prev) => ({ ...prev, titleHighlight: e.target.value }))
+                    }
+                    placeholder="Essentials"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="fc-description">Description</Label>
+                <textarea
+                  id="fc-description"
+                  value={featuredCollectionForm.description}
+                  onChange={(e) =>
+                    setFeaturedCollectionForm((prev) => ({ ...prev, description: e.target.value }))
+                  }
+                  placeholder="Embrace the season with our curated selection..."
+                  className="w-full min-h-[100px] px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="fc-button-text">Button Text</Label>
+                <Input
+                  id="fc-button-text"
+                  value={featuredCollectionForm.buttonText}
+                  onChange={(e) =>
+                    setFeaturedCollectionForm((prev) => ({ ...prev, buttonText: e.target.value }))
+                  }
+                  placeholder="Explore Collection"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="fc-collection">Link to Collection</Label>
+                <Select
+                  value={featuredCollectionForm.collectionId || 'none'}
+                  onValueChange={(value) =>
+                    setFeaturedCollectionForm((prev) => ({ ...prev, collectionId: value === 'none' ? '' : value }))
+                  }
+                >
+                  <SelectTrigger id="fc-collection">
+                    <SelectValue placeholder="Select a collection" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None (Custom Link)</SelectItem>
+                    {categories?.map((category) => (
+                      <SelectItem key={category._id} value={category._id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {featuredCollectionForm.collectionId && (
+                  <p className="text-xs text-muted-foreground">
+                    Button will link to: /shop?category={featuredCollectionForm.collectionId}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Active</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Show this section on the homepage
+                  </p>
+                </div>
+                <Switch
+                  checked={featuredCollectionForm.isActive}
+                  onCheckedChange={(checked) =>
+                    setFeaturedCollectionForm((prev) => ({ ...prev, isActive: checked }))
+                  }
+                />
+              </div>
+
+              <Button
+                onClick={() => updateFeaturedCollectionMutation.mutate(featuredCollectionForm)}
+                disabled={updateFeaturedCollectionMutation.isPending}
+                className="w-full"
+              >
+                {updateFeaturedCollectionMutation.isPending ? 'Saving...' : 'Save Featured Collection'}
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

@@ -14,7 +14,6 @@ import {
   Trash2,
   GripVertical,
   Image as ImageIcon,
-  Box,
 } from 'lucide-react';
 import { productsApi, categoriesApi, uploadApi, ProductInput, ColorVariant } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -51,6 +50,7 @@ export default function ProductFormPage() {
     description: '',
     price: 0,
     category: '',
+    images: [],
     colorVariants: [],
     sizes: [],
     featured: false,
@@ -61,7 +61,6 @@ export default function ProductFormPage() {
   });
 
   const [uploading, setUploading] = useState(false);
-  const [uploadingModel, setUploadingModel] = useState(false);
 
   const { data: product, isLoading: loadingProduct } = useQuery({
     queryKey: ['product', productId],
@@ -83,10 +82,13 @@ export default function ProductFormPage() {
         price: product.price,
         salePrice: product.salePrice,
         category: product.category._id,
-        colorVariants: product.colorVariants,
+        images: product.images || [],
+        colorVariants: product.colorVariants.map(v => ({
+          name: v.name,
+          hex: v.hex,
+          stock: v.stock,
+        })),
         sizes: product.sizes,
-        modelUrl: product.modelUrl,
-        modelPublicId: product.modelPublicId,
         featured: product.featured,
         isNewArrival: product.isNewArrival,
         isBestSeller: product.isBestSeller,
@@ -131,7 +133,7 @@ export default function ProductFormPage() {
     }
   };
 
-  const handleImageUpload = async (files: File[], variantIndex: number) => {
+  const handleImageUpload = async (files: File[]) => {
     setUploading(true);
     try {
       const base64Images = await Promise.all(files.map(fileToBase64));
@@ -140,13 +142,10 @@ export default function ProductFormPage() {
         token || ''
       );
 
-      const newVariants = [...(formData.colorVariants || [])];
-      newVariants[variantIndex] = {
-        ...newVariants[variantIndex],
-        images: [...newVariants[variantIndex].images, ...results.map((r) => r.url)],
-      };
-
-      setFormData((prev) => ({ ...prev, colorVariants: newVariants }));
+      setFormData((prev) => ({
+        ...prev,
+        images: [...(prev.images || []), ...results.map((r) => r.url)],
+      }));
       toast.success('Images uploaded successfully');
     } catch (error) {
       toast.error('Failed to upload images');
@@ -155,24 +154,11 @@ export default function ProductFormPage() {
     }
   };
 
-  const handleModelUpload = async (file: File) => {
-    setUploadingModel(true);
-    try {
-      // Use direct Cloudinary upload to bypass Vercel's 4.5MB body size limit
-      const result = await uploadApi.uploadModelDirect(file);
-
-      setFormData((prev) => ({
-        ...prev,
-        modelUrl: result.url,
-        modelPublicId: result.publicId,
-      }));
-      toast.success('3D model uploaded successfully');
-    } catch (error) {
-      console.error('Model upload error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to upload 3D model');
-    } finally {
-      setUploadingModel(false);
-    }
+  const removeImage = (imageIndex: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images?.filter((_, i) => i !== imageIndex) || [],
+    }));
   };
 
   const addColorVariant = () => {
@@ -180,7 +166,7 @@ export default function ProductFormPage() {
       ...prev,
       colorVariants: [
         ...(prev.colorVariants || []),
-        { name: '', hex: '#000000', images: [], stock: 0 },
+        { name: '', hex: '#000000', stock: 0 },
       ],
     }));
   };
@@ -201,16 +187,6 @@ export default function ProductFormPage() {
     }));
   };
 
-  const removeImage = (variantIndex: number, imageIndex: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      colorVariants: prev.colorVariants?.map((v, i) =>
-        i === variantIndex
-          ? { ...v, images: v.images.filter((_, imgI) => imgI !== imageIndex) }
-          : v
-      ),
-    }));
-  };
 
   const toggleSize = (size: string) => {
     setFormData((prev) => ({
@@ -448,36 +424,6 @@ export default function ProductFormPage() {
                     />
                   </div>
                 </div>
-
-                {/* Images */}
-                <div className="space-y-2">
-                  <Label>Images</Label>
-                  <div className="flex flex-wrap gap-3">
-                    {variant.images.map((image, imageIndex) => (
-                      <div
-                        key={imageIndex}
-                        className="relative w-24 h-24 rounded-lg overflow-hidden group"
-                      >
-                        <img
-                          src={image}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(variantIndex, imageIndex)}
-                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                    <ImageDropzone
-                      onDrop={(files) => handleImageUpload(files, variantIndex)}
-                      uploading={uploading}
-                    />
-                  </div>
-                </div>
               </div>
             ))}
 
@@ -499,38 +445,66 @@ export default function ProductFormPage() {
           </CardContent>
         </Card>
 
-        {/* 3D Model */}
+        {/* Product Images */}
         <Card>
           <CardHeader>
-            <CardTitle>3D Model</CardTitle>
+            <CardTitle>Product Images</CardTitle>
           </CardHeader>
-          <CardContent>
-            {formData.modelUrl ? (
-              <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
-                <Box className="h-10 w-10 text-brand-pink" />
-                <div className="flex-1">
-                  <p className="font-medium">3D Model Uploaded</p>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {formData.modelUrl}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      modelUrl: undefined,
-                      modelPublicId: undefined,
-                    }))
-                  }
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
+          <CardContent className="space-y-4">
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <Label>Upload Images</Label>
+              <div className="flex flex-wrap gap-3">
+                {formData.images?.map((image, imageIndex) => (
+                  <div
+                    key={imageIndex}
+                    className="relative w-24 h-24 rounded-lg overflow-hidden group border"
+                  >
+                    <img
+                      src={image}
+                      alt={`Product image ${imageIndex + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(imageIndex)}
+                      className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                <ImageDropzone
+                  onDrop={handleImageUpload}
+                  uploading={uploading}
+                />
               </div>
-            ) : (
-              <ModelDropzone onDrop={handleModelUpload} uploading={uploadingModel} />
+            </div>
+
+            {/* Image Review Section */}
+            {formData.images && formData.images.length > 0 && (
+              <div className="space-y-2">
+                <Label>Review Images ({formData.images.length} total)</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-muted rounded-lg max-h-96 overflow-y-auto">
+                  {formData.images.map((image, imageIndex) => (
+                    <div
+                      key={imageIndex}
+                      className="relative aspect-square rounded-lg overflow-hidden border-2 border-border hover:border-brand-pink transition-colors group"
+                    >
+                      <img
+                        src={image}
+                        alt={`Product image ${imageIndex + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                        <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                          Image {imageIndex + 1}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -649,49 +623,6 @@ function ImageDropzone({
         <div className="w-6 h-6 border-2 border-brand-pink/20 border-t-brand-pink rounded-full animate-spin" />
       ) : (
         <Upload className="h-6 w-6 text-muted-foreground" />
-      )}
-    </div>
-  );
-}
-
-function ModelDropzone({
-  onDrop,
-  uploading,
-}: {
-  onDrop: (file: File) => void;
-  uploading: boolean;
-}) {
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: (files) => files[0] && onDrop(files[0]),
-    accept: { 'model/gltf-binary': ['.glb'], 'model/gltf+json': ['.gltf'] },
-    maxFiles: 1,
-    disabled: uploading,
-  });
-
-  return (
-    <div
-      {...getRootProps()}
-      className={`p-8 rounded-lg border-2 border-dashed text-center cursor-pointer transition-colors ${
-        isDragActive
-          ? 'border-brand-pink bg-brand-pink/10'
-          : 'border-border hover:border-brand-pink'
-      } ${uploading ? 'opacity-50 cursor-wait' : ''}`}
-    >
-      <input {...getInputProps()} />
-      {uploading ? (
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-2 border-brand-pink/20 border-t-brand-pink rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground">Uploading...</p>
-        </div>
-      ) : (
-        <>
-          <Box className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            {isDragActive
-              ? 'Drop the 3D model here'
-              : 'Drag & drop a 3D model (.glb, .gltf)'}
-          </p>
-        </>
       )}
     </div>
   );

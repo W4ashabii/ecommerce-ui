@@ -29,9 +29,6 @@ export default function CheckoutPage() {
     email: '',
     phone: '',
     address: '',
-    city: '',
-    state: '',
-    postalCode: '',
     country: 'Nepal',
   });
 
@@ -217,58 +214,24 @@ export default function CheckoutPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="address">Address *</Label>
+                        <Label htmlFor="address">Delivery Address *</Label>
                         <Input
                           id="address"
                           value={formData.address}
                           onChange={(e) =>
                             setFormData((p) => ({ ...p, address: e.target.value }))
                           }
+                          placeholder="Street address, area, ward number"
                           required
                         />
+                        <p className="text-xs text-muted-foreground">
+                          We deliver within Kathmandu Valley only
+                        </p>
                       </div>
 
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="city">City *</Label>
-                          <Input
-                            id="city"
-                            value={formData.city}
-                            onChange={(e) =>
-                              setFormData((p) => ({ ...p, city: e.target.value }))
-                            }
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="state">State *</Label>
-                          <Input
-                            id="state"
-                            value={formData.state}
-                            onChange={(e) =>
-                              setFormData((p) => ({ ...p, state: e.target.value }))
-                            }
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="postalCode">Postal Code *</Label>
-                          <Input
-                            id="postalCode"
-                            value={formData.postalCode}
-                            onChange={(e) =>
-                              setFormData((p) => ({ ...p, postalCode: e.target.value }))
-                            }
-                            required
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="country">Country</Label>
-                          <Input id="country" value={formData.country} disabled />
-                        </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="country">Country</Label>
+                        <Input id="country" value={formData.country} disabled />
                       </div>
                     </CardContent>
                   </Card>
@@ -338,9 +301,7 @@ export default function CheckoutPage() {
                           <br />
                           {formData.address}
                           <br />
-                          {formData.city}, {formData.state} {formData.postalCode}
-                          <br />
-                          {formData.country}
+                          Kathmandu Valley, {formData.country}
                         </p>
                       </div>
 

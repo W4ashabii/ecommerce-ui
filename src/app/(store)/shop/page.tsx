@@ -4,10 +4,11 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { X, SlidersHorizontal } from 'lucide-react';
+import { X, SlidersHorizontal, Search } from 'lucide-react';
 import { productsApi, categoriesApi, ProductFilters } from '@/lib/api';
 import { ProductCard } from '@/components/products/product-card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
@@ -67,20 +68,25 @@ function ShopContent() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState(priceRanges[0]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: () => categoriesApi.getAll(),
   });
 
+  // Build complete filters object
+  const completeFilters: ProductFilters = {
+    ...filters,
+    sizes: selectedSizes.length > 0 ? selectedSizes.join(',') : undefined,
+    minPrice: priceRange.min,
+    maxPrice: priceRange.max,
+    search: searchQuery.trim() || undefined,
+  };
+
   const { data: productsData, isLoading } = useQuery({
-    queryKey: ['products', filters],
-    queryFn: () => productsApi.getAll({
-      ...filters,
-      sizes: selectedSizes.length > 0 ? selectedSizes.join(',') : undefined,
-      minPrice: priceRange.min,
-      maxPrice: priceRange.max,
-    }),
+    queryKey: ['products', completeFilters],
+    queryFn: () => productsApi.getAll(completeFilters),
   });
 
   // Handle URL params
@@ -89,6 +95,10 @@ function ShopContent() {
     const search = searchParams.get('search');
     const featured = searchParams.get('featured');
     const newParam = searchParams.get('new');
+
+    if (search) {
+      setSearchQuery(search);
+    }
 
     setFilters((prev) => ({
       ...prev,
@@ -111,12 +121,19 @@ function ShopContent() {
     setFilters({ page: 1, limit: 12, isActive: true });
     setSelectedSizes([]);
     setPriceRange(priceRanges[0]);
+    setSearchQuery('');
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFilters((prev) => ({ ...prev, page: 1 }));
   };
 
   const hasActiveFilters =
     filters.category ||
     selectedSizes.length > 0 ||
-    priceRange.min !== undefined;
+    priceRange.min !== undefined ||
+    searchQuery.trim().length > 0;
 
   return (
     <div className="min-h-screen py-8">
@@ -126,12 +143,43 @@ function ShopContent() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl md:text-4xl font-display font-bold mb-2"
+            className="text-3xl md:text-4xl font-display font-bold mb-4"
           >
             Shop All
           </motion.h1>
+          
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="mb-4">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search for products..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setFilters((prev) => ({ ...prev, page: 1 }));
+                }}
+                className="pl-10 pr-4"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setFilters((prev) => ({ ...prev, page: 1 }));
+                  }}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </form>
+          
           <p className="text-muted-foreground">
             {productsData?.total || 0} products
+            {searchQuery && ` matching "${searchQuery}"`}
           </p>
         </div>
 
@@ -164,7 +212,7 @@ function ShopContent() {
               <div className="space-y-2">
                 <button
                   onClick={() =>
-                    setFilters((prev) => ({ ...prev, category: undefined }))
+                    setFilters((prev) => ({ ...prev, category: undefined, page: 1 }))
                   }
                   className={cn(
                     'block w-full text-left py-2 px-3 rounded-lg transition-colors',
@@ -179,7 +227,7 @@ function ShopContent() {
                   <button
                     key={category._id}
                     onClick={() =>
-                      setFilters((prev) => ({ ...prev, category: category._id }))
+                      setFilters((prev) => ({ ...prev, category: category._id, page: 1 }))
                     }
                     className={cn(
                       'block w-full text-left py-2 px-3 rounded-lg transition-colors',
@@ -201,7 +249,10 @@ function ShopContent() {
                 {priceRanges.map((range) => (
                   <button
                     key={range.label}
-                    onClick={() => setPriceRange(range)}
+                    onClick={() => {
+                      setPriceRange(range);
+                      setFilters((prev) => ({ ...prev, page: 1 }));
+                    }}
                     className={cn(
                       'block w-full text-left py-2 px-3 rounded-lg transition-colors',
                       priceRange.label === range.label
@@ -311,12 +362,25 @@ function ShopContent() {
             {/* Active Filters */}
             {hasActiveFilters && (
               <div className="flex flex-wrap gap-2 mb-6">
+                {searchQuery && (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-pink/10 text-brand-pink text-sm">
+                    Search: "{searchQuery}"
+                    <button
+                      onClick={() => {
+                        setSearchQuery('');
+                        setFilters((prev) => ({ ...prev, page: 1 }));
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
                 {filters.category && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-pink/10 text-brand-pink text-sm">
                     {categories?.find((c) => c._id === filters.category)?.name}
                     <button
                       onClick={() =>
-                        setFilters((prev) => ({ ...prev, category: undefined }))
+                        setFilters((prev) => ({ ...prev, category: undefined, page: 1 }))
                       }
                     >
                       <X className="h-3 w-3" />
@@ -329,7 +393,10 @@ function ShopContent() {
                     className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-pink/10 text-brand-pink text-sm"
                   >
                     Size: {size}
-                    <button onClick={() => toggleSize(size)}>
+                    <button onClick={() => {
+                      toggleSize(size);
+                      setFilters((prev) => ({ ...prev, page: 1 }));
+                    }}>
                       <X className="h-3 w-3" />
                     </button>
                   </span>
@@ -337,7 +404,10 @@ function ShopContent() {
                 {priceRange.min !== undefined && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-pink/10 text-brand-pink text-sm">
                     {priceRange.label}
-                    <button onClick={() => setPriceRange(priceRanges[0])}>
+                    <button onClick={() => {
+                      setPriceRange(priceRanges[0]);
+                      setFilters((prev) => ({ ...prev, page: 1 }));
+                    }}>
                       <X className="h-3 w-3" />
                     </button>
                   </span>

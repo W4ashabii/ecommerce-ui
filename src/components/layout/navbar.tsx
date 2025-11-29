@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Menu, X, User, Settings, LogOut, Sun, Moon } from 'lucide-react';
+import { ShoppingBag, Menu, X, User, Settings, LogOut, Sun, Moon, Package } from 'lucide-react';
 import { useState } from 'react';
 import { useCartStore } from '@/store/cart';
 import { useAuth } from '@/lib/auth-context';
@@ -21,6 +21,7 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
   { href: '/collections', label: 'Collections' },
+  { href: '/track-order', label: 'Track Order' },
   { href: '/about', label: 'About' },
 ];
 

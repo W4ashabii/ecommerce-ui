@@ -20,7 +20,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const [selectedColor, setSelectedColor] = useState(0);
 
   const currentVariant = product.colorVariants[selectedColor];
-  const mainImage = currentVariant?.images[0] || '/placeholder-product.jpg';
+  const mainImage = product.images?.[0] || '/placeholder-product.jpg';
   const hasDiscount = product.salePrice && product.salePrice < product.price;
   const discountPercent = hasDiscount
     ? getDiscountPercentage(product.price, product.salePrice!)

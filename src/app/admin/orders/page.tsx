@@ -9,7 +9,6 @@ import {
   Filter,
   Eye,
   Package,
-  Truck,
   CheckCircle,
   XCircle,
   Clock,
@@ -18,6 +17,7 @@ import {
   Phone,
   Mail,
   MapPin,
+  Trash2,
 } from 'lucide-react';
 import { ordersApi, Order } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -47,7 +47,6 @@ const statusOptions = [
   { value: 'all', label: 'All Status' },
   { value: 'pending', label: 'Pending' },
   { value: 'processing', label: 'Processing' },
-  { value: 'shipped', label: 'Shipped' },
   { value: 'delivered', label: 'Delivered' },
   { value: 'cancelled', label: 'Cancelled' },
 ];
@@ -55,7 +54,6 @@ const statusOptions = [
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
   processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  shipped: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
   delivered: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
 };
@@ -73,6 +71,7 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [page, setPage] = useState(1);
 
   const { data: ordersData, isLoading } = useQuery({
@@ -112,6 +111,19 @@ export default function AdminOrdersPage() {
     },
     onError: () => {
       toast.error('Failed to add tracking number');
+    },
+  });
+
+  const deleteOrderMutation = useMutation({
+    mutationFn: (id: string) => ordersApi.delete(id, token || ''),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'order-stats'] });
+      toast.success('Order deleted successfully');
+      setOrderToDelete(null);
+    },
+    onError: () => {
+      toast.error('Failed to delete order');
     },
   });
 
@@ -179,19 +191,6 @@ export default function AdminOrdersPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-                <Truck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats?.shippedOrders || 0}</p>
-                <p className="text-xs text-muted-foreground">Shipped</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         <Card>
           <CardContent className="pt-6">
@@ -299,7 +298,6 @@ export default function AdminOrdersPage() {
                           <SelectContent>
                             <SelectItem value="pending">Pending</SelectItem>
                             <SelectItem value="processing">Processing</SelectItem>
-                            <SelectItem value="shipped">Shipped</SelectItem>
                             <SelectItem value="delivered">Delivered</SelectItem>
                             <SelectItem value="cancelled">Cancelled</SelectItem>
                           </SelectContent>
@@ -316,16 +314,26 @@ export default function AdminOrdersPage() {
                         </span>
                       </td>
                       <td className="p-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setTrackingNumber(order.trackingNumber || '');
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setTrackingNumber(order.trackingNumber || '');
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setOrderToDelete(order)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -351,6 +359,38 @@ export default function AdminOrdersPage() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!orderToDelete} onOpenChange={() => setOrderToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Order</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete order {orderToDelete?.orderNumber}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-4 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setOrderToDelete(null)}
+              disabled={deleteOrderMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (orderToDelete) {
+                  deleteOrderMutation.mutate(orderToDelete._id);
+                }
+              }}
+              disabled={deleteOrderMutation.isPending}
+            >
+              {deleteOrderMutation.isPending ? 'Deleting...' : 'Delete'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Order Detail Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
@@ -383,7 +423,6 @@ export default function AdminOrdersPage() {
                     <SelectContent>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="processing">Processing</SelectItem>
-                      <SelectItem value="shipped">Shipped</SelectItem>
                       <SelectItem value="delivered">Delivered</SelectItem>
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
@@ -430,8 +469,11 @@ export default function AdminOrdersPage() {
                       <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                       <span>
                         {selectedOrder.shippingAddress.address}<br />
-                        {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state}<br />
-                        {selectedOrder.shippingAddress.postalCode}, {selectedOrder.shippingAddress.country}
+                        {selectedOrder.shippingAddress.city || 'Kathmandu Valley'}
+                        {selectedOrder.shippingAddress.state && `, ${selectedOrder.shippingAddress.state}`}
+                        {selectedOrder.shippingAddress.postalCode && ` ${selectedOrder.shippingAddress.postalCode}`}
+                        <br />
+                        {selectedOrder.shippingAddress.country}
                       </span>
                     </div>
                   </div>

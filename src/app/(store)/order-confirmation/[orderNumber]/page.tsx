@@ -74,16 +74,6 @@ export default function OrderConfirmationPage() {
 
               <div className="flex gap-4">
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                  <Truck className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium text-muted-foreground">Shipped</p>
-                  <p className="text-sm text-muted-foreground">On the way to you</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                   <Home className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>

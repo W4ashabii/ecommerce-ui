@@ -26,14 +26,12 @@ import { formatPrice, formatDateTime } from '@/lib/utils';
 const statusSteps = [
   { id: 'pending', label: 'Order Placed', icon: Clock },
   { id: 'processing', label: 'Processing', icon: Package },
-  { id: 'shipped', label: 'Shipped', icon: Truck },
   { id: 'delivered', label: 'Delivered', icon: Home },
 ];
 
 const statusColors: Record<string, string> = {
   pending: 'text-yellow-500',
   processing: 'text-blue-500',
-  shipped: 'text-purple-500',
   delivered: 'text-green-500',
   cancelled: 'text-red-500',
 };

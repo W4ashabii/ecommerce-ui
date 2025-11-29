@@ -293,22 +293,24 @@ export const settingsApi = {
       body: JSON.stringify(info),
     }),
 
-  updateFloatingElements: (elements: FloatingElement[], _token?: string) =>
-    request<Settings>('/settings/floating-elements', {
-      method: 'PUT',
-      body: JSON.stringify({ elements }),
-    }),
-
-  updateFloatingElement: (id: string, element: Partial<FloatingElement>, _token?: string) =>
-    request<Settings>(`/settings/floating-elements/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(element),
-    }),
-
   updateWebsiteTheme: (theme: 'floral' | 'summer' | 'winter' | 'monsoon' | 'classy' | 'monochrome', _token?: string) =>
     request<Settings>('/settings/website-theme', {
       method: 'PUT',
       body: JSON.stringify({ theme }),
+    }),
+
+  updateFeaturedCollection: (collection: {
+    label?: string;
+    title?: string;
+    titleHighlight?: string;
+    description?: string;
+    buttonText?: string;
+    collectionId?: string;
+    isActive?: boolean;
+  }, _token?: string) =>
+    request<Settings>('/settings/featured-collection', {
+      method: 'PUT',
+      body: JSON.stringify(collection),
     }),
 };
 
@@ -457,6 +459,11 @@ export const ordersApi = {
       body: JSON.stringify({ trackingNumber }),
     }),
 
+  delete: (id: string, _token?: string) =>
+    request<{ success: boolean; message: string }>(`/orders/${id}`, {
+      method: 'DELETE',
+    }),
+
   getStats: (_token?: string) =>
     request<OrderStats>('/orders/stats'),
 };
@@ -475,7 +482,6 @@ export interface ColorVariant {
   _id?: string;
   name: string;
   hex: string;
-  images: string[];
   stock: number;
 }
 
@@ -487,10 +493,9 @@ export interface Product {
   price: number;
   salePrice?: number;
   category: { _id: string; name: string; slug: string };
+  images: string[]; // Product images (not per color variant)
   colorVariants: ColorVariant[];
   sizes: string[];
-  modelUrl?: string;
-  modelPublicId?: string;
   featured: boolean;
   isNewArrival: boolean;
   isBestSeller: boolean;
@@ -507,10 +512,9 @@ export interface ProductInput {
   price: number;
   salePrice?: number;
   category: string;
+  images?: string[];
   colorVariants?: ColorVariant[];
   sizes?: string[];
-  modelUrl?: string;
-  modelPublicId?: string;
   featured?: boolean;
   isNewArrival?: boolean;
   isBestSeller?: boolean;
@@ -597,16 +601,6 @@ export interface TeamMember {
   imagePublicId?: string;
 }
 
-export interface FloatingElement {
-  _id?: string;
-  type: 'icon' | 'image';
-  icon?: 'heart' | 'star' | 'sparkles';
-  image?: string;
-  imagePublicId?: string;
-  position: 'top-right' | 'bottom-right' | 'middle-left';
-  isActive: boolean;
-}
-
 export interface AboutPage {
   title: string;
   subtitle?: string;
@@ -668,7 +662,15 @@ export interface Settings {
   };
   aboutPage?: AboutPage;
   collectionsPage?: CollectionsPage;
-  floatingElements?: FloatingElement[];
+  featuredCollection?: {
+    label: string;
+    title: string;
+    titleHighlight: string;
+    description: string;
+    buttonText: string;
+    collectionId?: string;
+    isActive: boolean;
+  };
   websiteTheme?: 'floral' | 'summer' | 'winter' | 'monsoon' | 'classy' | 'monochrome';
 }
 
@@ -701,16 +703,16 @@ export interface Order {
     email: string;
     phone: string;
     address: string;
-    city: string;
-    state: string;
-    postalCode: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
     country: string;
   };
   subtotal: number;
   shippingCost: number;
   tax: number;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'processing' | 'delivered' | 'cancelled';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   paymentMethod?: string;
   paymentId?: string;
@@ -733,9 +735,9 @@ export interface CreateOrderInput {
     email: string;
     phone: string;
     address: string;
-    city: string;
-    state: string;
-    postalCode: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
     country: string;
   };
   paymentMethod?: string;
@@ -762,7 +764,6 @@ export interface OrderStats {
   totalRevenue: number;
   pendingOrders: number;
   processingOrders: number;
-  shippedOrders: number;
   deliveredOrders: number;
 }
 
