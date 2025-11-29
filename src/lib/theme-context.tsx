@@ -53,19 +53,28 @@ export function ThemeProvider({ children, userTheme, isAuthenticated }: ThemePro
   const [mounted, setMounted] = useState(false);
 
   // Fetch website theme from settings - this is the global theme set by admin
-  // All users (admin and regular) will see this theme
-  const { data: settings } = useQuery({
+  // This works for ALL users (logged in, not logged in, admin, regular users)
+  // The endpoint is public, so no authentication is required
+  const { data: settings, error: settingsError } = useQuery({
     queryKey: ['settings'],
     queryFn: settingsApi.get,
     staleTime: 30 * 1000, // 30 seconds - refetch more frequently to catch admin changes
     refetchOnWindowFocus: true, // Refetch when user returns to tab
     refetchOnMount: true, // Always refetch on mount to get latest theme
     refetchInterval: 60 * 1000, // Refetch every minute to catch admin theme changes
+    retry: 3, // Retry up to 3 times if it fails
+    retryDelay: 1000, // Wait 1 second between retries
   });
 
   // Force website theme from API - this overrides any local preference
   // Only admins can change this via the settings page
+  // Defaults to 'floral' if API call fails or theme is not set
   const websiteTheme: WebsiteTheme = settings?.websiteTheme || 'floral';
+  
+  // Log error if settings fetch fails (but continue with default theme)
+  if (settingsError) {
+    console.warn('Failed to fetch website theme from API, using default:', settingsError);
+  }
 
   // Load mode on mount
   useEffect(() => {
